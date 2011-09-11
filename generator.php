@@ -112,7 +112,6 @@ try {
 				'%%COLUMN_LIST%%',
 				'%%BIND_COLUMNS%%',
 				'%%COLUMN_VAR_LIST%%',
-				'%%CLASSNAME_PLURAL%%',
 				'%%FIND_PROPERTY_CHECKS%%',
 				'%%FIND_PROPERTY_CLAUSES%%'
 			), array(
@@ -123,7 +122,6 @@ try {
 				'`'.implode('`, `', $column_list).'`',
 				implode("\n\t\t\t", $bind_columns),
 				'$'.implode(', $', $column_list),
-				ucfirst(Inflector::pluralize($table)),
 				implode("\n\t\t", $find_property_checks),
 				implode("\n\n\t\t", $find_property_clauses)
 			), $template));
