@@ -72,7 +72,7 @@ class %%CLASSNAME%% extends DatabaseTable {
 		for ($i=0; $i < count($col_keys); $i++) { 
 			$bound_name = $col_keys[$i];
 			$$bound_name = '';
-			$bound_names[$col_keys[$i]] = &$$bound_name;
+			$bound_names[] = &$$bound_name;
 		}
 		
 		if (call_user_func_array(array($stmt, 'bind_result'), $bound_names) === false)
@@ -137,7 +137,6 @@ class %%CLASSNAME%% extends DatabaseTable {
 			}
 			
 			$bind_names[] = $types;
-			// TODO: Rewrite this so I understand what's going on
 			for ($i=0; $i<count($params);$i++) {
 			    $bind_name = 'bind' . $i;
 			    $$bind_name = $params[$i];
