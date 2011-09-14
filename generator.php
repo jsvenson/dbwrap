@@ -77,8 +77,6 @@ try {
 	$properties            = array();
 	$type_defs             = array();
 	$bind_columns          = array();
-	$find_property_checks  = array();
-	$find_property_clauses = array();
 	
 	foreach ($columns as $c) {
 		switch ($data_types[$c['type']]) {
@@ -95,11 +93,6 @@ try {
 		$properties[]            = 'var $'.$c['name'].' = '.$val.';';
 		$type_defs[]             = "\$this->_types['{$c['name']}'] = '{$data_types[$c['type']]}';";
 		$bind_columns[]          = '$j->'.$c['name'].' = $'.$c['name'].';';
-		$find_property_checks[]  = '$_'.$c['name'].' = isset($opts[\''.$c['name'].'\']) ? $opts[\''.$c['name'].'\'] : '
-			. (is_numeric($val) ? '0;' : "'';");
-		$find_property_clauses[] = 'if ($_'.$c['name'].(is_numeric($val)?' > 0':" != ''").') {'."\n\t\t\t"
-			. '$query .= \' and `'.$c['name'].'` = ? \';'."\n\t\t\t"
-			. '$param[] = array(\''.$data_types[$c['type']].'\', $_'.$c['name'].');'."\n\t\t}";
 	}
 	
 	$result = file_put_contents($classname.'.class.php',
@@ -111,9 +104,7 @@ try {
 				'%%CLASSNAME%%',
 				'%%COLUMN_LIST%%',
 				'%%BIND_COLUMNS%%',
-				'%%COLUMN_VAR_LIST%%',
-				'%%FIND_PROPERTY_CHECKS%%',
-				'%%FIND_PROPERTY_CLAUSES%%'
+				'%%COLUMN_VAR_LIST%%'
 			), array(
 				strtolower($table),
 				implode("\n\t", $properties),
@@ -121,9 +112,7 @@ try {
 				$classname,
 				'`'.implode('`, `', $column_list).'`',
 				implode("\n\t\t\t", $bind_columns),
-				'$'.implode(', $', $column_list),
-				implode("\n\t\t", $find_property_checks),
-				implode("\n\n\t\t", $find_property_clauses)
+				'$'.implode(', $', $column_list)
 			), $template));
 	
 	if ($result === false) throw new Exception('Problem writing file.');

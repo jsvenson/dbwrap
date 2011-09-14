@@ -50,7 +50,9 @@ class %%CLASSNAME%% extends DatabaseTable {
 		
 		if (!isset($col_types[$column])) throw new Exception('Unknown column \''.$column.'\'');
 		
-		$query = 'select `id`, `created`, `updated`, `make`, `model`, `diagonal`, `width`, `height`, `connectors`, `description` from `'
+		$col_keys = array_keys($col_types);
+		
+		$query = 'select `'.implode('`,`', $col_keys).'` from `'
 			. self::_tablename.'` where `' . $mysqli->real_escape_string($column) . '` = ?';
 		
 		if (count($args) > 1) {
@@ -66,25 +68,30 @@ class %%CLASSNAME%% extends DatabaseTable {
 		
 		if (!$stmt->execute()) throw new Exception('Problem reading '.self::_tablename.': '.$stmt->error."\n$query");
 		
-		if ($stmt->bind_result($id, $created, $updated, $make, $model, $diagonal, $width, $height, $connectors, $description) === false)
+		$bound_names = array();
+		for ($i=0; $i < count($col_keys); $i++) { 
+			$bound_name = $col_keys[$i];
+			$$bound_name = '';
+			$bound_names[$col_keys[$i]] = &$$bound_name;
+		}
+		
+		if (call_user_func_array(array($stmt, 'bind_result'), $bound_names) === false)
 			throw new Exception('Problem reading '.self::_tablename.': '.$stmt->error);
 		
-		$records = array();
+		$records   = array();
+		$classname = get_called_class();
 		while ($stmt->fetch()) {
-			$j = new Monitor();
-			$j->id = $id;
-			$j->created = $created;
-			$j->updated = $updated;
-			$j->make = $make;
-			$j->model = $model;
-			$j->diagonal = $diagonal;
-			$j->width = $width;
-			$j->height = $height;
-			$j->connectors = $connectors;
-			$j->description = $description;
+			$j = new $classname;
+			
+			for ($i=0; $i < count($col_keys); $i++) { 
+				$j->$col_keys[$i] = $$col_keys[$i];
+			}
 			
 			$records[] = $j;
 		}
+		
+		$stmt->close();
+		$mysqli->close();
 		
 		return $limit == 0 ? $records : $records[0];
 	}
@@ -101,13 +108,9 @@ class %%CLASSNAME%% extends DatabaseTable {
 		$offset  = isset($opts['offset']) ? $opts['offset'] : 0;
 		$order   = isset($opts['order'])  ? $opts['order']  : '';
 		
-		%%FIND_PROPERTY_CHECKS%%
-		
 		$types = '';
 		$param = array();
 		$query = 'select %%COLUMN_LIST%% from `'.self::_tablename.'` where 1=1';
-		
-		%%FIND_PROPERTY_CLAUSES%%
 		
 		if ($order != '') {
 			$query .= ' order by '.$mysqli->real_escape_string($order);
