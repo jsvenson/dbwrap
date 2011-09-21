@@ -42,7 +42,7 @@ $data_types = array(
 
 $dbname    = strtolower($argv[1]);
 $table     = strtolower($argv[2]);
-$classname = Inflector::singularize(isset($argv[3]) ? $argv[3] : ucfirst($table));
+$classname = Inflector::classify(isset($argv[3]) ? $argv[3] : $table);
 
 $mysqli = new MySQLi($dbhost, $dbuser, $dbpass, 'information_schema');
 

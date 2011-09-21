@@ -181,7 +181,7 @@ abstract class DatabaseTable {
 			dbConstants::_dbname
 		);
 		
-		$tablename = Inflector::pluralize(get_called_class());
+		$tablename = Inflector::tableize(get_called_class());
 		
 		$query = 'select column_name, data_type from information_schema.columns where table_schema=\''.dbConstants::_dbname.'\' and table_name=\''.$tablename.'\'';
 		$stmt = $mysqli->prepare($query);
