@@ -65,6 +65,30 @@ class Inflector {
 		'sheep', 'fish', 'series', 'species', 'money', 'rice', 'information', 'equipment'
 	);
 	
+	public static function camelize($lowercase_and_underscored_word, $first_letter_uppercase = true) {
+		if ($first_letter_uppercase) {
+			return preg_replace('/(^|_)(.)/e', "strtoupper('\\2')", preg_replace('/\/(.?)/e', "'::'.strtoupper('\\1')", $lowercase_and_underscored_word));
+		} else {
+			return strtolower(substr($lowercase_and_underscored_word, 0, 1)) . substr(self::camelize($lowercase_and_underscored_word), 1);
+		}
+	}
+	
+	public static function classify($table_name) {
+		return self::camelize(self::singularize($table_name));
+	}
+	
+	public static function dasherize($underscored_word) {
+		return preg_replace('/_/', '-', $underscored_word);
+	}
+	
+	public static function demodulize($class_name_in_module) {
+		return preg_replace('/^.*\\\\/', '', $class_name_in_module);
+	}
+	
+	public static function foreign_key($class_name, $separate_class_name_and_id_with_underscore = true) {
+		return self::underscore(self::demodulize($class_name)) . ($separate_class_name_and_id_with_underscore ? '_id' : 'id');
+	}
+	
 	public static function ordinalize($number) {
 		if (11 <= intval($number) % 100 && intval($number) % 100 <= 13) {
 			return $number.'th';
@@ -122,22 +146,6 @@ class Inflector {
 		}
 	}
 	
-	public static function camelize($lowercase_and_underscored_word, $first_letter_uppercase = true) {
-		if ($first_letter_uppercase) {
-			return preg_replace('/(^|_)(.)/e', "strtoupper('\\2')", preg_replace('/\/(.?)/e', "'::'.strtoupper('\\1')", $lowercase_and_underscored_word));
-		} else {
-			return strtolower(substr($lowercase_and_underscored_word, 0, 1)) . substr(self::camelize($lowercase_and_underscored_word), 1);
-		}
-	}
-	
-	public static function classify($table_name) {
-		return self::camelize(self::singularize($table_name));
-	}
-	
-	public static function dasherize($underscored_word) {
-		return preg_replace('/_/', '-', $underscored_word);
-	}
-	
 	public static function tableize($class_name) {
 		return self::pluralize(self::underscore($class_name));
 	}
@@ -145,8 +153,7 @@ class Inflector {
 	public static function underscore($camel_cased_word) {
 		return strtolower(str_replace('-', '_', 
 			preg_replace('/([a-z\d])([A-Z])/', '$1_$2',
-				preg_replace(
-					'/([A-Z]+)([A-Z][a-z])/', '$1_$2',
+				preg_replace('/([A-Z]+)([A-Z][a-z])/', '$1_$2',
 					preg_replace('/::/', '/' ,$camel_cased_word)
 				)
 			)
