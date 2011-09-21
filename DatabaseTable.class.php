@@ -57,6 +57,8 @@ abstract class DatabaseTable {
 		
 		$this->closeConnection();
 		
+		$this->id = 0;
+		
 		return true;
 	}
 	
