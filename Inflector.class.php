@@ -127,6 +127,10 @@ class Inflector {
 		return self::underscore(self::demodulize($class_name)) . ($separate_class_name_and_id_with_underscore ? '_id' : 'id');
 	}
 	
+	public static function humanize($lower_case_and_underscored_word) {
+		return ucfirst(str_replace('_', ' ', preg_replace('/_id$/', '', $lower_case_and_underscored_word)));
+	}
+	
 	public static function ordinalize($number) {
 		if (11 <= intval($number) % 100 && intval($number) % 100 <= 13) {
 			return $number.'th';
@@ -138,6 +142,20 @@ class Inflector {
 				default: return $number.'th'; break;
 			}
 		}
+	}
+	
+	public function parameterize($string, $separator = '-') {
+		# turn unwanted characters into $separator
+		$parameterized_string = preg_replace('/[^a-z0-9\-_]+/i', $separator, self::transliterate($string));
+		if ($separator != null && $separator != '') {
+			$re_separator = preg_quote($separator);
+			# no more than one of $seaparator in a row
+			$parameterized_string = preg_replace("/$re_separator{2,}/", $separator, $parameterized_string);
+			# remove leading/trailing $separator
+			$parameterized_string = preg_replace("/^$re_separator|$re_separator$/i", '', $parameterized_string);
+		}
+		
+		return strtolower($parameterized_string);
 	}
 	
 	public static function pluralize($word) {
@@ -188,6 +206,14 @@ class Inflector {
 		return self::pluralize(self::underscore($class_name));
 	}
 	
+	public function transliterate($string) {
+		return str_replace(array_keys(self::$approximations), array_values(self::$approximations), $string);
+	}
+	
+	public static function titleize($word) {
+		return preg_replace('/\b([a-z])/e', "ucfirst('$1')", self::humanize(self::underscore($word)));
+	}
+	
 	public static function underscore($camel_cased_word) {
 		return strtolower(str_replace('-', '_', 
 			preg_replace('/([a-z\d])([A-Z])/', '$1_$2',
@@ -196,24 +222,6 @@ class Inflector {
 				)
 			)
 		));
-	}
-	
-	public function transliterate($string) {
-		return str_replace(array_keys(self::$approximations), array_values(self::$approximations), $string);
-	}
-	
-	public function parameterize($string, $separator = '-') {
-		# turn unwanted characters into $separator
-		$parameterized_string = preg_replace('/[^a-z0-9\-_]+/i', $separator, self::transliterate($string));
-		if ($separator != null && $separator != '') {
-			$re_separator = preg_quote($separator);
-			# no more than one of $seaparator in a row
-			$parameterized_string = preg_replace("/$re_separator{2,}/", $separator, $parameterized_string);
-			# remove leading/trailing $separator
-			$parameterized_string = preg_replace("/^$re_separator|$re_separator$/i", '', $parameterized_string);
-		}
-		
-		return strtolower($parameterized_string);
 	}
 }
 
