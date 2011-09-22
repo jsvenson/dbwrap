@@ -8,18 +8,22 @@
 class Inflector {
 	private static $plural = array(
 		array('/(quiz)$/i',                '$1zes'  ),
+		array('/^(oxen)$/i',               '$1'     ),
 		array('/^(ox)$/i',                 '$1en'   ),
+		array('/([m|l])ice$/i',            '$1ice'  ),
 		array('/([m|l])ouse$/i',           '$1ice'  ),
 		array('/(matr|vert|ind)id|ex$/i',  '$1ices' ),
 		array('/(x|ch|ss|sh)$/i',          '$1es'   ),
 		array('/([^aeiouy]|qu)y$/i',       '$1ies'  ),
-		array('/(hive)$/i',                 '$1s'    ),
+		array('/(hive)$/i',                '$1s'    ),
 		array('/(?:([^f])fe|([lr])f)$/i',  '$1$2ves'),
 		array('/sis$/i',                   'ses'    ),
+		array('/([ti])a$/i',               '$1a'    ),
 		array('/([ti])um$/i',              '$1a'    ),
-		array('/(buffal|tomat)o$/i',        '$1oes'  ),
+		array('/(buffal|tomat)o$/i',       '$1oes'  ),
 		array('/(bu)s$/i',                 '$1ses'  ),
 		array('/(alias|status)$/i',        '$1es'   ),
+		array('/(optop|vir)i$/i',          '$1i'    ),
 		array('/(octop|vir)us$/i',         '$1uses' ),
 		array('/(ax|test)is$/i',           '$1es'   ),
 		array('/s$/i',                     's'      ),
@@ -27,6 +31,7 @@ class Inflector {
 	);
 	
 	private static $singular = array(
+		array('/(database)s$/i',                                                  '$1'     ),
 		array('/(quiz)zes$/i',                                                    '$1'     ),
 		array('/(matr)ices$/i',                                                   '$1ix'   ),
 		array('/(vert|ind)ices$/i',                                               '$1ex'   ),
@@ -54,6 +59,8 @@ class Inflector {
 	);
 	
 	private static $irregular = array(
+		array('zombie', 'zombies'),
+		array('cow', 'cattle'),
 		array('move',   'moves'),
 		array('sex',    'sexes'),
 		array('child',  'children'),
@@ -62,7 +69,7 @@ class Inflector {
 	);
 	
 	private static $uncountable = array(
-		'sheep', 'fish', 'series', 'species', 'money', 'rice', 'information', 'equipment'
+		'jeans', 'sheep', 'fish', 'series', 'species', 'money', 'rice', 'information', 'equipment'
 	);
 	
 	public static function camelize($lowercase_and_underscored_word, $first_letter_uppercase = true) {
