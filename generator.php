@@ -21,6 +21,7 @@ $ignore_columns = array('id', 'created', 'updated');
 $data_types = array(
 	'bigint'     => 'i',
 	'binary'     => 'i',
+	'bit'        => 'i',
 	'blob'       => 'b',
 	'char'       => 's',
 	'date'       => 's',

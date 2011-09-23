@@ -171,9 +171,9 @@ abstract class DatabaseTable {
 		$col_types = array();
 		
 		$data_types = array(
-			'bigint' => 'i', 'binary' => 'i', 'blob' => 'b', 'char' => 's', 'date' => 's', 'datetime' => 's', 'decimal' => 'd',
-			'enum' => 's', 'int' => 'i', 'longblob' => 'b', 'mediumblob' => 'b', 'mediumtext' => 's', 'set' => 's',
-			'smallint' => 'i', 'text' => 's', 'time' => 's', 'timestamp' => 's', 'tinyint' => 'i', 'varchar' => 's'
+			'bigint' => 'i', 'binary' => 'i', 'bit' => 'i', 'blob' => 'b', 'char' => 's', 'date' => 's', 'datetime' => 's',
+			'decimal' => 'd', 'enum' => 's', 'int' => 'i', 'longblob' => 'b', 'mediumblob' => 'b', 'mediumtext' => 's',
+			'set' => 's', 'smallint' => 'i', 'text' => 's', 'time' => 's', 'timestamp' => 's', 'tinyint' => 'i', 'varchar' => 's'
 		);
 		
 		$mysqli = new MySQLi(
