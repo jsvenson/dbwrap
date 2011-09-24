@@ -239,6 +239,8 @@ abstract class DatabaseTable {
 		$stmt->close();
 		$mysqli->close();
 		
+		if (count($records) == 0) return array();
+		
 		return $limit == 0 ? $records : $records[0];
 	}
 }
