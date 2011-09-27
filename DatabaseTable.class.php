@@ -160,15 +160,26 @@ abstract class DatabaseTable {
 		return $flat ? '`'.implode('`,`', $this->columns()).'`' : $columns;
 	}
 	
-	# supports find_by_ and find_all_by_ for any column
-	# second argument of $args only supports order by clause
+	# find_[all_]by_<column>(<value>[, '<order clause>'])
+	# find('<:all|:first>', array(['conditions' => '<where clause>', 'values' => array(<values>)], ['order'=>'<order clause']))
+	# ':all' - returns all matching records
+	# ':first' - returns the first matching record according to <order clause>
+	# <where clause> - substitute '?' for values, ex. 'family=? and genus=?'
+	# <values> - values to replace '?' in <where clause>. FIFO.
+	# <order clause> - sql order by clause ('price desc')
 	public static function __callStatic($name, $args) {
-		if (substr($name, 0, 11) != 'find_all_by' && substr($name, 0, 7) != 'find_by')
-			throw new Exception ('Unknown method call: '.$name);
+		$find        = $name == 'find';
+		$find_by     = substr($name, 0, 7) == 'find_by';
+		$find_all_by = substr($name, 0, 11) == 'find_all_by';
 		
-		$limit     = substr($name, 0, 7) == 'find_by' ? 1 : 0;
-		$column    = substr($name, $limit==1?8:12);
+		if (!($find || $find_by || $find_all_by))
+			throw new Exception('Unknown method call: '.$name);
+		
+		$limit     = $find_by ? 1 : 0;
+		$column    = substr($name, $find_by ? 8 : 12);
 		$col_types = array();
+		
+		if (!$find && $column == '') throw new Exception('Unknown method call: '.$name);
 		
 		$data_types = array(
 			'bigint' => 'i', 'binary' => 'i', 'bit' => 'i', 'blob' => 'b', 'char' => 's', 'date' => 's', 'datetime' => 's',
@@ -183,7 +194,8 @@ abstract class DatabaseTable {
 			dbConstants::_dbname
 		);
 		
-		$tablename = Inflector::tableize(get_called_class());
+		$classname = get_called_class();
+		$tablename = Inflector::tableize($classname);
 		
 		$query = 'select column_name, data_type from information_schema.columns where table_schema=\''.dbConstants::_dbname.'\' and table_name=\''.$tablename.'\'';
 		$stmt = $mysqli->prepare($query);
@@ -194,25 +206,69 @@ abstract class DatabaseTable {
 		}
 		$stmt->close();
 		
-		if (!isset($col_types[$column])) throw new Exception('Unknown column \''.$column.'\'');
+		if (!$find && !isset($col_types[$column])) throw new Exception('Unknown column \''.$column.'\'');
 		
 		$col_keys = array_keys($col_types);
 		
-		$query = 'select `'.implode('`,`', $col_keys).'` from `'
-			. $tablename .'` where `' . $mysqli->real_escape_string($column) . '` = ?';
+		$query = 'select `'.implode('`,`', $col_keys).'` from `' . $tablename . '`';
 		
-		if (count($args) > 1) {
-			$order = isset($args[1]['order']) ? $mysqli->real_escape_string($args[1]['order']) : 'created asc';
-			$query .= ' order by '.$order;
+		if (!$find) { # find_by or find_all_by
+			$query .= ' where `' . $mysqli->real_escape_string($column) . '` = ?';
+			
+			if (count($args > 1)) {
+				$order = isset($args[1]['order']) ? $mysqli->real_escape_string($args[1]['order']) : 'created asc';
+				$query .= ' order by '.$order;
+			}
+			
+			if ($limit > 0) $query .= ' limit 1';
+		} else {
+			if (!isset($args[0])) $args[0] = ':all';
+			
+			$cols = array();
+			if (isset($args[1]['conditions'])) {
+				preg_match_all('/`?\w+?`?\s*=\s*\?/', $args[1]['conditions'], $matches);
+				
+				$cols = $matches[0];
+				array_walk($cols, function(&$el) {
+					$split = explode('=', $el);
+					$el = str_replace('`', '', trim($split[0]));
+				});
+				
+				$query .= ' where ' . $args[1]['conditions'];
+			}
+			
+			if (isset($args[1]['order'])) $query .= ' order by ' . $mysqli->real_escape_string($args[1]['order']);
+			else $query .= ' order by `created` asc';
+			
+			if ($args[0] == ':first') $query .= ' limit 1';
 		}
-		
-		if ($limit > 0) $query .= ' limit 1';
 		
 		if (($stmt = $mysqli->prepare($query)) === false) throw new Exception('Problem preparing records: '.$mysqli->error);
 		
-		$stmt->bind_param($col_types[$column], $args[0]);
+		if ($find) {
+			if (count($cols) > 0) {
+				$types = '';
+				$params = array();
+				
+				for ($i=0; $i < count($cols); $i++) { 
+					$types .= $col_types[$cols[$i]];
+					$params[] = $args[1]['values'][$i];
+				}
+				
+				$bind_names[] = $types;
+				for ($i=0; $i < count($params); $i++) { 
+					$bind_name = 'bind'.$i;
+					$$bind_name = $params[$i];
+					$bind_names[] = &$$bind_name;
+				}
+			
+				call_user_func_array(array($stmt, 'bind_param'), $bind_names);
+			}
+		} else {
+			$stmt->bind_param($col_types[$column], $args[0]);
+		}
 		
-		if (!$stmt->execute()) throw new Exception('Problem reading '.self::_tablename.': '.$stmt->error."\n$query");
+		if (!$stmt->execute()) throw new Exception('Problem reading '.$classname::_tablename.': '.$stmt->error."\n$query");
 		
 		$bound_names = array();
 		for ($i=0; $i < count($col_keys); $i++) { 
@@ -222,10 +278,9 @@ abstract class DatabaseTable {
 		}
 		
 		if (call_user_func_array(array($stmt, 'bind_result'), $bound_names) === false)
-			throw new Exception('Problem reading '.self::_tablename.': '.$stmt->error);
+			throw new Exception('Problem reading '.$classname::_tablename.': '.$stmt->error);
 		
 		$records   = array();
-		$classname = get_called_class();
 		while ($stmt->fetch()) {
 			$j = new $classname;
 			

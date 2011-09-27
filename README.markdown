@@ -53,41 +53,32 @@ $dodo->genus     = 'Raphus';
 $dodo->species   = 'R. cucullatus';
 
 $dodo->save();   # record is created in database
-
 $dodo->delete(); # record is removed from database
 $dodo->save();   # record is recreated in database (with new id)
+</pre>
 
-# create two more records
-$lion = new Animal();
-$lion->kingdom   = 'Animalia';
-$lion->phylum    = 'Chordata';
-$lion->class     = 'Mammalia';
-$lion->order     = 'Carnivora';
-$lion->family    = 'Felidae';
-$lion->genus     = 'Panthera';
-$lion->species   = 'P. leo';
-$lion->save();
+Search examples:
 
-
-$hippo = new Animal();
-$hippo->kingdom   = 'Animalia';
-$hippo->phylum    = 'Chordata';
-$hippo->class     = 'Mammalia';
-$hippo->order     = 'Artiodactyla';
-$hippo->family    = 'Hippopotamidae';
-$hippo->genus     = 'Hippopotamus';
-$hippo->species   = 'H. amphibius';
-$hippo->save();
-
-# find the first mammal
+<pre>
+# find the first mammal (default order by created asc)
 $mammal = Animal::find_by_class('mammalia');
-echo $mammal->species();   # 'P. leo';
 
 # find all the vertebrates sorted by family in descending order
 $mammals = Animal::find_all_by_phylum('chordata', array('order' => 'family desc'));
-echo $mammals[0]->species; # 'H. amphibius'
 
-# get all the animals
+# get all the records from animals
 $animals = Animal::find();
-echo count($animals);      # '3'
+
+# use find() to get all carnivorans ordered by genus, reverse alphabetical
+$mammals = Animal::find(
+    ':all',
+    array(
+      'conditions' => '`order`=?', # wrap keywords as in raw SQL
+      'values'=>array('carnivora'),
+      'order'=>'genus desc'
+    )
+);
+
+# get the last animal in the database
+$last = Animal::find(':first', array('order' => 'created desc'));
 </pre>
