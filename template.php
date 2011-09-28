@@ -14,7 +14,7 @@ class %%CLASSNAME%% extends DatabaseTable {
 	function __construct($id = 0) {
 		%%TYPE_DEFS%%
 		parent::__construct($id);
-	}
+	}%%COLLECTIONS%%
 }
 
 ?>

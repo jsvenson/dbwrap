@@ -4,7 +4,7 @@
 require_once('Inflector.class.php');
 
 if (!isset($argv[1]) || $argv[1] == '?' || $argv[1] == 'help') {
-	echo "\n".'Usage: generator <database> <table> [<classname>]'."\n\n";
+	echo "\n".'Usage: generator -d<database> -t<table> [-c<classname>]'."\n\n";
 	exit();
 }
 
@@ -41,9 +41,12 @@ $data_types = array(
 	'varchar'    => 's'
 );
 
-$dbname    = strtolower($argv[1]);
-$table     = strtolower($argv[2]);
-$classname = Inflector::classify(isset($argv[3]) ? $argv[3] : $table);
+
+$options = getopt('d:t:', array('classname::', 'has-many::'));
+
+$dbname    = $options['d'];
+$table     = strtolower($options['t']);
+$classname = Inflector::classify(isset($options['classname']) ? $options['classname'] : $table);
 
 $mysqli = new MySQLi($dbhost, $dbuser, $dbpass, 'information_schema');
 
@@ -78,6 +81,7 @@ try {
 	$properties            = array();
 	$type_defs             = array();
 	$bind_columns          = array();
+	$collections           = array();
 	
 	foreach ($columns as $c) {
 		switch ($data_types[$c['type']]) {
@@ -91,9 +95,21 @@ try {
 				break;
 		}
 		
-		$properties[]            = 'var $'.$c['name'].' = '.$val.';';
-		$type_defs[]             = "\$this->_types['{$c['name']}'] = '{$data_types[$c['type']]}';";
-		$bind_columns[]          = '$j->'.$c['name'].' = $'.$c['name'].';';
+		$properties[]   = 'var $'.$c['name'].' = '.$val.';';
+		$type_defs[]    = "\$this->_types['{$c['name']}'] = '{$data_types[$c['type']]}';";
+		$bind_columns[] = '$j->'.$c['name'].' = $'.$c['name'].';';
+	}
+	
+	if (isset($options['has-many'])) {
+		if (!is_array($options['has-many'])) $options['has-many'] = array($options['has-many']);
+		
+		for ($i=0; $i < count($options['has-many']); $i++) { 
+			$m = $options['has-many'][$i];
+			$properties[] = 'var $_'.$m.' = array();';
+			$collections[] = "\tpublic function " . $m . "() {\n\t\tif (\$this->_" . $m . " == array()) \$this->_" . $m
+				. " = new Collection('" . $m . "', array('" . Inflector::foreign_key($classname)
+				. "' => \$this->id));\n\t\treturn \$this->_" . $m . ";\n\t}";
+		}
 	}
 	
 	$result = file_put_contents($classname.'.class.php',
@@ -105,7 +121,8 @@ try {
 				'%%CLASSNAME%%',
 				'%%COLUMN_LIST%%',
 				'%%BIND_COLUMNS%%',
-				'%%COLUMN_VAR_LIST%%'
+				'%%COLUMN_VAR_LIST%%',
+				'%%COLLECTIONS%%'
 			), array(
 				strtolower($table),
 				implode("\n\t", $properties),
@@ -113,7 +130,8 @@ try {
 				$classname,
 				'`'.implode('`, `', $column_list).'`',
 				implode("\n\t\t\t", $bind_columns),
-				'$'.implode(', $', $column_list)
+				'$'.implode(', $', $column_list),
+				"\n\n".implode("\n\n", $collections)
 			), $template));
 	
 	if ($result === false) throw new Exception('Problem writing file.');

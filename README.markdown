@@ -12,31 +12,46 @@ Third, the use of __callStatic() necessitates PHP >= 5.3.
 
 Inflector.class.php is a subset of the Ruby [Inflector](http://as.rubyonrails.org/classes/Inflector.html) class.
 
+<hr>
+
 **Example**
 
-Assuming a table such as
+Assuming the schema for a database "zoo" is
 
 <pre>
+create table `cages` (
+    `id`        int auto_increment primary key,
+    `created`   datetime,
+    `updated`   datetime,
+    `name`      varchar(50)
+);
+
 create table `animals` (
-	`id`        int auto_increment primary key,
-	`created`   datetime,
-	`updated`   datetime,
-	`kingdom`   varchar(128),
-	`phylum`    varchar(128),
-	`class`     varchar(128),
-	`order`     varchar(128),
-	`family`    varchar(128),
-	`subfamily` varchar(128),
-	`genus`     varchar(128),
-	`species`   varchar(128)
+    `id`        int auto_increment primary key,
+    `created`   datetime,
+    `updated`   datetime,
+    `kingdom`   varchar(128),
+    `phylum`    varchar(128),
+    `class`     varchar(128),
+    `order`     varchar(128),
+    `family`    varchar(128),
+    `subfamily` varchar(128),
+    `genus`     varchar(128),
+    `species`   varchar(128),
+    `cage_id`   int,
+    constraint foreign key (`cage_id`) references `cages`(`id`)
 );
 </pre>
 
-Command line:
+**Generate Models**
 
-<pre>./generator.php zoo animals</pre>
+<pre>
+./generator.php -d=zoo -t=animals
+./generator.php -d=zoo -t=cages --has-many=animals
+</pre>
 
-PHP:
+<b>CRUD</b>
+
 <pre>
 require_once('Animals.class.php');
 
@@ -57,7 +72,7 @@ $dodo->delete(); # record is removed from database
 $dodo->save();   # record is recreated in database (with new id)
 </pre>
 
-Search examples:
+**Search**
 
 <pre>
 # find the first mammal (default order by created asc)
@@ -81,4 +96,13 @@ $mammals = Animal::find(
 
 # get the last animal in the database
 $last = Animal::find(':first', array('order' => 'created desc'));
+</pre>
+
+**Relationships**
+
+<pre>
+$cage = new Cage(1); # get cage with id = 1
+
+# get the number of weasels in the cage
+echo $cage->animals()->count(array('family'=>'mustilidae'));
 </pre>
