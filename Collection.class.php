@@ -18,7 +18,6 @@ class Collection {
 	public function count($conditions = array()) {
 		if (count($conditions) == 0) return count($this->objects);
 		
-		# $conditions = array('unread' => true)
 		$filtered = $this->objects;
 		foreach ($conditions as $key => $value) {
 			$filtered = array_filter($filtered, function($el) use ($key, $value) {
