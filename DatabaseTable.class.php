@@ -2,6 +2,7 @@
 
 require_once('Inflector.class.php');
 require_once('dbConstants.class.php');
+require_once('Collection.class.php');
 
 /**
 * DatabaseTable
