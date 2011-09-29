@@ -70,6 +70,18 @@ $dodo->species   = 'R. cucullatus';
 $dodo->save();   # record is created in database
 $dodo->delete(); # record is removed from database
 $dodo->save();   # record is recreated in database (with new id)
+
+# new records can also be created by passing in an array
+$brontosaurus = new Animal(array(
+    'kingdom'   => 'Animalia',
+    'phylum'    => 'Chordata',
+    'class'     => 'Reptilia',
+    'order'     => 'Saurischia',
+    'family'    => 'Diplodocidae',
+    'subfamily' => 'Apatosaurinae',
+    'genus'     => 'Apatosaurus',
+    'species'   => 'A. excelsus'
+));
 </pre>
 
 **Search**

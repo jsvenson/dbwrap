@@ -21,7 +21,18 @@ abstract class DatabaseTable {
 		$this->_types['id'] = 'i';
 		$this->_types['created'] = 's';
 		$this->_types['updated'] = 's';
-		if ($id > 0) $this->load($id);
+		
+		if (is_array($id)) {
+			$cols = array_filter(array_keys(get_class_vars(get_called_class())), function($el) {
+				return $el[0] != '_';
+			});
+			
+			foreach ($cols as $c) {
+				if (isset($id[$c])) $this->$c = $id[$c];
+			}
+		} else {
+			if ($id > 0) $this->load($id);
+		}
 	}
 	
 	protected function openConnection() {
