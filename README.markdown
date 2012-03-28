@@ -1,6 +1,6 @@
 Generates wrapper classes based on existing MySQL tables.
 
-Usage: generator.php &lt;database&gt; &lt;table&gt; [&lt;classname&gt;]
+Usage: <code>generator.php -d&lt;database&gt; -t&lt;table&gt; [-c&lt;classname&gt;] [--has-many=&lt;referent-class&gt;]</code>
 
 It makes a few assumptions. First, names of tables are pluralized. Animals, monsters, and users, not animal, monster, and user. Second, it expects all tables to have at least the following three rows:
 
