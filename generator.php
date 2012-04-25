@@ -4,7 +4,7 @@
 require_once('Inflector.class.php');
 
 if (!isset($argv[1]) || $argv[1] == '?' || $argv[1] == 'help') {
-	echo "\n".'Usage: generator -d<database> -t<table> [--classname=<classname>] [--has-many=<classnames>]'."\n\n";
+	echo "\n".'Usage: generator -d<database> -t<table> [--classname=<classname>] [--has-many=<referent-class>]'."\n\n";
 	exit();
 }
 
