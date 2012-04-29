@@ -1,5 +1,7 @@
 <?php
 
+require_once('Inflector.class.php');
+
 function __autoload($name) {
 	include_once(Inflector::classify($name).'.class.php');
 }
@@ -12,7 +14,14 @@ class Collection {
 	
 	function __construct($class, $args = array()) {
 		$classname = Inflector::classify($class);
-		$this->objects = $classname::find();
+		$conditions = array();
+		foreach (array_keys($args) as $k) {
+            $conditions[] = '`'.$k.'` = ?';
+		}
+		$this->objects = $classname::find(':all', array(
+            'conditions' => implode(' and ', $conditions),
+            'values' => array_values($args)
+		));
 	}
 	
 	public function count($conditions = array()) {

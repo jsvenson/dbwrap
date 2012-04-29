@@ -63,7 +63,7 @@ abstract class DatabaseTable {
 	public function delete() {
 		$this->openConnection();
 		
-		if (!($stmt = $this->_db->prepare('delete from '.$this->_tablename.' where id = ?')))
+		if (!($stmt = $this->_db->prepare('delete from `'.$this->_tablename.'` where id = ?')))
 			throw new Exception('Problem preparing delete statement: '.$this->_db->error);
 		
 		if (!$stmt->bind_param('i', $this->id))
@@ -87,7 +87,7 @@ abstract class DatabaseTable {
 		$columns = '`'.implode('`,`', $this->columns()).'`';
 		
 		# TODO: filter $columns for $this->lazyload[]
-		if (!($stmt = $this->_db->prepare('select '.$columns.' from '.$this->_tablename.' where id = ?')))
+		if (!($stmt = $this->_db->prepare('select '.$columns.' from `'.$this->_tablename.'` where id = ?')))
 			throw new Exception('Problem preparing select statement: '.$this->_db->error);
 		$stmt->bind_param('i', $id);
 		
@@ -125,7 +125,7 @@ abstract class DatabaseTable {
 			$cols   = '`created`, `updated`, '.'`'.implode('`, `', $columns).'`';
 			$values = 'now(), now()'.str_repeat(', ?', count($columns));
 			
-			if (!($stmt = $this->_db->prepare('insert into '.$this->_tablename.' ('.$cols.') values ('.$values.')')))
+			if (!($stmt = $this->_db->prepare('insert into `'.$this->_tablename.'` ('.$cols.') values ('.$values.')')))
 				throw new Exception('Problem preparing insert statement: '.$this->_db->error);
 			
 			$params = array();
@@ -215,7 +215,7 @@ abstract class DatabaseTable {
 		);
 		
 		$classname = get_called_class();
-		$tablename = Inflector::tableize($classname);
+		$tablename = $classname::_tablename;
 		
 		$query = 'select column_name, data_type from information_schema.columns where table_schema=\''.dbConstants::_dbname.'\' and table_name=\''.$tablename.'\'';
 		$stmt = $mysqli->prepare($query);
