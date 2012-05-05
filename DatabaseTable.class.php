@@ -246,11 +246,13 @@ abstract class DatabaseTable {
 			
 			$cols = array();
 			if (isset($args[1]['conditions'])) {
-				preg_match_all('/`?\w+?`?\s*=\s*\?/', $args[1]['conditions'], $matches);
+			    # supports col = val, col != val, col < val, and col > val
+			    # TODO: handle between keyword
+				preg_match_all('/`?\w+?`?\s*(=|<|>|!=|<=|>=)\s*\?/', $args[1]['conditions'], $matches);
 				
 				$cols = $matches[0];
 				array_walk($cols, function(&$el) {
-					$split = explode('=', $el);
+                    $split = preg_split('/(=|<|>|!=|<=|>=)/', $el);
 					$el = str_replace('`', '', trim($split[0]));
 				});
 				
