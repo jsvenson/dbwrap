@@ -173,9 +173,9 @@ abstract class DatabaseTable {
 	}
 	
 	# find_[all_]by_<column>(<value>[, '<order clause>'])
-	# find('<:all|:first>', array(['conditions' => '<where clause>', 'values' => array(<values>)], ['order'=>'<order clause']))
-	# ':all' - returns all matching records
-	# ':first' - returns the first matching record according to <order clause>
+	# find('<all|first>', array(['conditions' => '<where clause>', 'values' => array(<values>)], ['order'=>'<order clause']))
+	# 'all' - returns all matching records
+	# 'first' - returns the first matching record according to <order clause>
 	# <where clause> - substitute '?' for values, ex. 'family=? and genus=?'
 	# <values> - values to replace '?' in <where clause>. FIFO.
 	# <order clause> - sql order by clause ('price desc')
@@ -234,7 +234,7 @@ abstract class DatabaseTable {
 			
 			if ($limit > 0) $query .= ' limit 1';
 		} else {
-			if (!isset($args[0])) $args[0] = ':all';
+			if (!isset($args[0])) $args[0] = 'all';
 			
 			$cols = array();
 			if (isset($args[1]['conditions'])) {
@@ -252,7 +252,7 @@ abstract class DatabaseTable {
 			if (isset($args[1]['order'])) $query .= ' order by ' . $mysqli->real_escape_string($args[1]['order']);
 			else $query .= ' order by `created` asc';
 			
-			if ($args[0] == ':first') $query .= ' limit 1';
+			if ($args[0] == 'first' || $args[0] == ':first') $query .= ' limit 1';
 		}
 		
 		if (($stmt = $mysqli->prepare($query)) === false) throw new Exception('Problem preparing records: '.$mysqli->error);
