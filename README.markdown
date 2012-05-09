@@ -98,7 +98,7 @@ $animals = Animal::find();
 
 # use find() to get all carnivorans ordered by genus, reverse alphabetical
 $mammals = Animal::find(
-    ':all',
+    'all',
     array(
       'conditions' => '`order`=?', # wrap keywords as in raw SQL
       'values'=>array('carnivora'),
@@ -107,7 +107,7 @@ $mammals = Animal::find(
 );
 
 # get the last animal in the database
-$last = Animal::find(':first', array('order' => 'created desc'));
+$last = Animal::find('first', array('order' => 'created desc'));
 </pre>
 
 **Relationships**
