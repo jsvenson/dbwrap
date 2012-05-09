@@ -30,6 +30,7 @@ $data_types = array(
 	'enum'       => 's',
 	'int'        => 'i',
 	'longblob'   => 'b',
+	'longtext'   => 's',
 	'mediumblob' => 'b',
 	'mediumtext' => 's',
 	'set'        => 's',
@@ -37,7 +38,9 @@ $data_types = array(
 	'text'       => 's',
 	'time'       => 's',
 	'timestamp'  => 's',
+	'tinyblob'   => 'b',
 	'tinyint'    => 'i',
+	'tinytext'   => 's',
 	'varchar'    => 's'
 );
 
@@ -97,6 +100,7 @@ try {
 		
 		$properties[]   = 'var $'.$c['name'].' = '.$val.';';
 		$type_defs[]    = "\$this->_types['{$c['name']}'] = '{$data_types[$c['type']]}';";
+        // $type_defs[]    = "\$this->_lazyload['{$c['name']}'] = ".(delayed_load($c['type']) ? 'true' : 'false').";";
 		$bind_columns[] = '$j->'.$c['name'].' = $'.$c['name'].';';
 	}
 	
@@ -137,6 +141,13 @@ try {
 	if ($result === false) throw new Exception('Problem writing file.');
 } catch (Exception $e) {
 	echo "Generation of class failed.\n".$e->getMessage()."\n";
+}
+
+function delayed_load($type) {
+    return array_search($type, array(
+	   'tinyblob', 'blob', 'mediumblob', 'longblob',
+	   'tinytext', 'text', 'mediumtext', 'longtext'
+	));
 }
 
 ?>

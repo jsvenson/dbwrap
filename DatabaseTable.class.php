@@ -16,6 +16,7 @@ abstract class DatabaseTable {
 	var $updated     = '';
 	
 	var $_types      = array(); # column types
+	var $_lazyload   = array(); # boolean array for column delayed loading
 	
 	function __construct($id = 0) {
 		$this->_types['id'] = 'i';
@@ -34,6 +35,10 @@ abstract class DatabaseTable {
 			if ($id > 0) $this->load($id);
 		}
 	}
+	
+    // public function __get($varname) {
+    //  # TODO: if $this->_lazyload($varname) then pull data from database
+    // }
 	
 	protected function openConnection() {
 		$c = get_called_class();
@@ -81,6 +86,7 @@ abstract class DatabaseTable {
 		
 		$columns = '`'.implode('`,`', $this->columns()).'`';
 		
+		# TODO: filter $columns for $this->lazyload[]
 		if (!($stmt = $this->_db->prepare('select '.$columns.' from `'.$this->_tablename.'` where id = ?')))
 			throw new Exception('Problem preparing select statement: '.$this->_db->error);
 		$stmt->bind_param('i', $id);
@@ -132,6 +138,8 @@ abstract class DatabaseTable {
 			$values = '';
 			$types  = '';
 			$params = array();
+			
+			# TODO: if $this->_lazyload[column] and column == null, don't update that column
 			
 			for ($i=0; $i < count($columns); $i++) { 
 				$types  .= $this->_types[$columns[$i]];
@@ -238,11 +246,13 @@ abstract class DatabaseTable {
 			
 			$cols = array();
 			if (isset($args[1]['conditions'])) {
-				preg_match_all('/`?\w+?`?\s*=\s*\?/', $args[1]['conditions'], $matches);
+			    # supports col = val, col != val, col < val, and col > val
+			    # TODO: handle between keyword
+				preg_match_all('/`?\w+?`?\s*(=|<|>|!=|<=|>=)\s*\?/', $args[1]['conditions'], $matches);
 				
 				$cols = $matches[0];
 				array_walk($cols, function(&$el) {
-					$split = explode('=', $el);
+                    $split = preg_split('/(=|<|>|!=|<=|>=)/', $el);
 					$el = str_replace('`', '', trim($split[0]));
 				});
 				
