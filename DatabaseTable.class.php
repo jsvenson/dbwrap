@@ -263,7 +263,14 @@ abstract class DatabaseTable {
 			else $query .= ' order by `created` asc';
 			
 			if ($args[0] == 'first' || $args[0] == ':first') $query .= ' limit 1';
+			elseif (isset($args[1]['page'])) {
+			    $limit_value = (int)$args[1]['per_page'];
+			    $offset_value = (int)($args[1]['page'] - 1) * $limit_value;
+                $query .= ' limit '.$limit_value.' offset '.$offset_value;
+			}
 		}
+		
+		echo '<pre>'.$query.'</pre>';
 		
 		if (($stmt = $mysqli->prepare($query)) === false) throw new Exception('Problem preparing records: '.$mysqli->error);
 		
