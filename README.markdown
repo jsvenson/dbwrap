@@ -4,7 +4,7 @@ Usage: <code>generator.php -d&lt;database&gt; -t&lt;table&gt; [--classname=&lt;c
 
 It makes a few assumptions. First, names of tables are pluralized. Animals, monsters, and users, not animal, monster, and user. Second, it expects all tables to have at least the following three rows:
 
-* id,  int primary key
+* id, int auto_increment primary key
 * created, datetime
 * updated, datetime
 
