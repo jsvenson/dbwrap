@@ -180,28 +180,10 @@ abstract class DatabaseTable {
 		return $flat ? '`'.implode('`,`', $this->columns()).'`' : $columns;
 	}
 	
-	# find_[all_]by_<column>(<value>[, '<order clause>'])
-	# find('<all|first>', array(['conditions' => '<where clause>', 'values' => array(<values>)], ['order'=>'<order clause']))
-	# 'all' - returns all matching records
-	# 'first' - returns the first matching record according to <order clause>
-	# <where clause> - substitute '?' for values, ex. 'family=? and genus=?'
-	# <values> - values to replace '?' in <where clause>. FIFO.
-	# <order clause> - sql order by clause ('price desc')
-	public static function __callStatic($name, $args) {
-		$find        = $name == 'find';
-		$find_by     = substr($name, 0, 7) == 'find_by';
-		$find_all_by = substr($name, 0, 11) == 'find_all_by';
-		
-		if (!($find || $find_by || $find_all_by))
-			throw new Exception('Unknown method call: '.$name);
-		
-		$limit     = $find_by ? 1 : 0;
-		$column    = substr($name, $find_by ? 8 : 12);
-		$col_types = array();
-		
-		if (!$find && $column == '') throw new Exception('Unknown method call: '.$name);
-		
-		$data_types = array(
+	private static function getColumns() {
+        $col_types = array();
+        
+        $data_types = array(
 			'bigint' => 'i', 'binary' => 'i', 'bit' => 'i', 'blob' => 'b', 'char' => 's', 'date' => 's', 'datetime' => 's',
 			'decimal' => 'd', 'enum' => 's', 'int' => 'i', 'longblob' => 'b', 'mediumblob' => 'b', 'mediumtext' => 's',
 			'set' => 's', 'smallint' => 'i', 'text' => 's', 'time' => 's', 'timestamp' => 's', 'tinyint' => 'i', 'varchar' => 's'
@@ -216,118 +198,166 @@ abstract class DatabaseTable {
 		
 		$classname = get_called_class();
 		$tablename = $classname::_tablename;
+		$database  = dbConstants::_dbname;
 		
-		$query = 'select column_name, data_type from information_schema.columns where table_schema=\''.dbConstants::_dbname.'\' and table_name=\''.$tablename.'\'';
+		$query = 'select column_name, data_type from information_schema.columns where table_schema=? and table_name=?';
 		$stmt = $mysqli->prepare($query);
+		$stmt->bind_param('ss', $database, $tablename);
+		
 		$stmt->execute();
+		
 		$stmt->bind_result($column_name, $data_type);
 		while ($stmt->fetch()) {
-			$col_types[$column_name] = $data_types[$data_type];
+		    $col_types[$column_name] = $data_types[$data_type];
 		}
 		$stmt->close();
 		
-		if (!$find && !isset($col_types[$column])) throw new Exception('Unknown column \''.$column.'\'');
-		
-		$col_keys = array_keys($col_types);
-		
-		$query = 'select `'.implode('`,`', $col_keys).'` from `' . $tablename . '`';
-		
-		if (!$find) { # find_by or find_all_by
-			$query .= ' where `' . $mysqli->real_escape_string($column) . '` = ?';
-			
-			if (count($args > 1)) {
-				$order = isset($args[1]['order']) ? $mysqli->real_escape_string($args[1]['order']) : 'created asc';
-				$query .= ' order by '.$order;
-			}
-			
-			if ($limit > 0) $query .= ' limit 1';
-		} else {
-			if (!isset($args[0])) $args[0] = 'all';
-			
-			$cols = array();
-			if (isset($args[1]['conditions'])) {
-			    # supports col = val, col != val, col < val, and col > val
-			    # TODO: handle between keyword
-				preg_match_all('/`?\w+?`?\s*(=|<|>|!=|<=|>=)\s*\?/', $args[1]['conditions'], $matches);
-				
-				$cols = $matches[0];
-				array_walk($cols, function(&$el) {
-                    $split = preg_split('/(=|<|>|!=|<=|>=)/', $el);
-					$el = str_replace('`', '', trim($split[0]));
-				});
-				
-				$query .= ' where ' . $args[1]['conditions'];
-			}
-			
-			if (isset($args[1]['order'])) $query .= ' order by ' . $mysqli->real_escape_string($args[1]['order']);
-			else $query .= ' order by `created` asc';
-			
-			if ($args[0] == 'first' || $args[0] == ':first') $query .= ' limit 1';
-			elseif (isset($args[1]['page'])) {
-			    $limit_value = (int)$args[1]['per_page'];
-			    $offset_value = (int)($args[1]['page'] - 1) * $limit_value;
-                $query .= ' limit '.$limit_value.' offset '.$offset_value;
-			}
-		}
-		
-		echo '<pre>'.$query.'</pre>';
-		
-		if (($stmt = $mysqli->prepare($query)) === false) throw new Exception('Problem preparing records: '.$mysqli->error);
-		
-		if ($find) {
-			if (count($cols) > 0) {
-				$types = '';
-				$params = array();
-				
-				for ($i=0; $i < count($cols); $i++) { 
-					$types .= $col_types[$cols[$i]];
-					$params[] = $args[1]['values'][$i];
-				}
-				
-				$bind_names[] = $types;
-				for ($i=0; $i < count($params); $i++) { 
-					$bind_name = 'bind'.$i;
-					$$bind_name = $params[$i];
-					$bind_names[] = &$$bind_name;
-				}
-			
-				call_user_func_array(array($stmt, 'bind_param'), $bind_names);
-			}
-		} else {
-			$stmt->bind_param($col_types[$column], $args[0]);
-		}
-		
-		if (!$stmt->execute()) throw new Exception('Problem reading '.$classname::_tablename.': '.$stmt->error."\n$query");
-		
-		$bound_names = array();
-		for ($i=0; $i < count($col_keys); $i++) { 
-			$bound_name = $col_keys[$i];
-			$$bound_name = '';
-			$bound_names[] = &$$bound_name;
-		}
-		
-		if (call_user_func_array(array($stmt, 'bind_result'), $bound_names) === false)
-			throw new Exception('Problem reading '.$classname::_tablename.': '.$stmt->error);
-		
-		$records   = array();
-		while ($stmt->fetch()) {
-			$j = new $classname;
-			
-			for ($i=0; $i < count($col_keys); $i++) { 
-				$j->$col_keys[$i] = $$col_keys[$i];
-			}
-			
-			$records[] = $j;
-		}
-		
-		$stmt->close();
-		$mysqli->close();
-		
-		if (count($records) == 0) return array();
-		
-		return $limit == 0 ? $records : $records[0];
+		return $col_types;
 	}
-}
+	
+    # currently handles [find|count][_by_|_all_by_<column_name>]
+    # find('first|all', array(
+    #   ['conditions'=>'<conditions>', 'values'=>array(<values),]
+    #   ['order'=>'<order>',]
+    #   ['page'=><1-based page number>, 'per_page'=><records per page>,]
+    # ));
+	public static function __callStatic($name, $args) {
+        $name = strtolower($name);
+        $command = explode('_', $name, 3); # get method name parts
 
+        $class = get_called_class();
+        $cols = array();
+
+        # for a count, select count(*), otherwise select all columns in table
+        if ($command[0] == 'count') { 
+            $query = 'select count(*) as \'total\' from `'.$class::_tablename.'`';
+        } else {
+            $columns = self::getColumns();
+            $query = 'select `'.implode('`,`', array_keys($columns)).'` from `'.$class::_tablename.'`';
+        }
+
+        $mysqli = new MySQLi(
+            dbConstants::_dbserver,
+            dbConstants::_dbuser,
+            base64_decode(dbConstants::_dbpass),
+            dbConstants::_dbname
+        );
+
+        # build where clause
+        if (count($command) > 1 || isset($args[1]['conditions'])) {
+            if (!isset($columns)) $columns = self::getColumns();
+
+            if (count($command) > 1) {
+                $by_column = $command[1] == 'by' ? $command[2] : 
+                    substr($command[2], strpos($command[2], '_') + 1);
+                
+                $query .= ' where ' . $mysqli->real_escape_string($by_column) . '=?';
+            } else {
+                # find all the columns in conditions
+                # supports =, !=, <, >, <=, >=
+                preg_match_all('/`?\w+?`?\s*(=|<|>|!=|<=|>=)\s*\?/', $args[1]['conditions'], $matches);
+                
+                # $cols = the columns listed in conditions
+                $cols = $matches[0];
+    			array_walk($cols, function(&$el) {
+                    $split = preg_split('/(=|<|>|!=|<=|>=)/', $el);
+    				$el = str_replace('`', '', trim($split[0]));
+    			});
+
+    			$query .= ' where ' . $args[1]['conditions'];
+    			
+    			# make sure all columns in conditions exist in the table
+    			foreach ($cols as $c) {
+                    if (array_search($c, array_merge($columns, array('id', 'created', 'updated'))) === false)
+                        throw new Exception('Unknown column “' . $c . '”.');
+    			}
+            }
+        }
+        
+        # add order by and limit clauses
+        if ($command[0] == 'find') {
+            # set order by
+            if (isset($args[1]['order'])) $query .= ' order by '.$mysqli->real_escape_string($args[1]['order']);
+            else $query .= ' order by `created` asc';
+
+            # set limits
+            # if 'first' was specified or if find_by or count_by was called, limit to one result
+            if ((isset($args[0]) && ($args[0] == 'first' || $args[0] == ':first')) || 
+                ((count($command) > 1) && $command[1] == 'by')) $query .= ' limit 1';
+            elseif (isset($args[1]['page'])) { # if paging, limit to 'per_page' value
+                $limit_value = (int)$args[1]['per_page'];
+                $offset_value = ((int)$args[1]['page'] - 1) * $limit_value;
+                $query .= ' limit ' . $limit_value . ' offset ' . $offset_value;
+            }
+        }
+
+        # prepare query
+        if (($stmt = $mysqli->prepare($query)) === false)
+            throw new Exception('Problem preparing records: '.$mysqli->error);
+        
+        # bind variables
+        if (count($cols) > 0) { # bind 'conditions'
+            $types = '';
+            $params = array();
+            
+            for ($i=0; $i < count($cols); $i++) { 
+                $types .= $columns[$cols[$i]];
+                $params[] = $args[1]['values'][$i];
+            }
+            
+            $bind_names[] = $types;
+            for ($i=0; $i < count($params); $i++) { 
+                $bind_name = 'bind'.$i;
+                $$bind_name = $params[$i];
+                $bind_names[] = &$$bind_name;
+            }
+            
+            call_user_func_array(array($stmt, 'bind_param'), $bind_names);
+        }
+        
+        if (count($command) > 1) { # bind _by_colname
+            $stmt->bind_param($columns[$by_column], $args[0]);
+        }
+
+        # execute query
+        $classname = get_called_class();
+        if (!$stmt->execute()) throw new Exception('Problems reading ' . $classname::_tablename . ': '
+            . $stmt->error . "\n$query");
+
+        # if find, loop through results. If limit 1, return object, else return array of objects
+        if ($command[0] == 'find') {
+            $bound_names = array();
+            $col_keys = array_keys($columns);
+            for ($i=0; $i < count($columns); $i++) { 
+                $bound_name = $col_keys[$i];
+                $$bound_name = '';
+                $bound_names[] = &$$bound_name;
+            }
+            
+            if (call_user_func_array(array($stmt, 'bind_result'), $bound_names) === false)
+                throw new Exception('Problem reading ' . $classname::_tablename . ': ' . $stmt->error);
+            
+            $records = array();
+            while ($stmt->fetch()) {
+                $obj = new $classname;
+                
+                for ($i=0; $i < count($col_keys); $i++) { 
+                    $obj->$col_keys[$i] = $$col_keys[$i];
+                }
+                
+                $records[] = $obj;
+            }
+        } else { # count
+            $stmt->bind_result($total);
+            $stmt->fetch();
+            $count_result = $total;
+        }
+        
+        $stmt->close();
+        $mysqli->close();
+        
+        return isset($count_result) ? $count_result : $records;
+    }
+}
 
 ?>
