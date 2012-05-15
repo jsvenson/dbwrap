@@ -115,10 +115,12 @@ $last = Animal::find('first', array('order' => 'created desc'));
 <pre>
 # get the third page of reptiles, 25 records per page
 $reptiles = Animal::find_all_by_class(
-    'reptilia', array(
-    'page'     => 3,
-    'per_page' => 25
-));
+    'reptilia',
+    array(
+        'page'     => 3,
+        'per_page' => 25
+    )
+);
 
 # find the total number of starfish
 $starfish_count = Animal::count_by_class('asteroidea');
