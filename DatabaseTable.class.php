@@ -287,6 +287,7 @@ abstract class DatabaseTable {
             elseif (isset($args[1]['page'])) { # if paging, limit to 'per_page' value
                 $limit_value = (int)$args[1]['per_page'];
                 $offset_value = ((int)$args[1]['page'] - 1) * $limit_value;
+                if ($offset_value < 0) $offset_value = 0; # never have a negative offset
                 $query .= ' limit ' . $limit_value . ' offset ' . $offset_value;
             }
         }
