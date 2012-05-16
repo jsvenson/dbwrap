@@ -268,7 +268,7 @@ abstract class DatabaseTable {
     			
     			# make sure all columns in conditions exist in the table
     			foreach ($cols as $c) {
-                    if (array_search($c, array_merge($columns, array('id', 'created', 'updated'))) === false)
+                    if (array_search($c, array_merge(array_keys($columns), array('id', 'created', 'updated'))) === false)
                         throw new Exception('Unknown column “' . $c . '”.');
     			}
             }
