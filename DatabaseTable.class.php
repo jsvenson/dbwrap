@@ -357,7 +357,16 @@ abstract class DatabaseTable {
         $stmt->close();
         $mysqli->close();
         
-        return isset($count_result) ? $count_result : $records;
+        # if we've counted, return the total
+        if (isset($count_result)) return $count_result;
+        
+        # if find_by_ and the result set isn't empty, return the first record
+        if (count($command) > 1 && $command[1] == 'by' && count($records) > 0) {
+            return $records[0];
+        }
+        
+        # return the result
+        return $records;
     }
 }
 
