@@ -247,16 +247,20 @@ abstract class DatabaseTable {
         if (count($command) > 1 || isset($args[1]['conditions'])) {
             if (!isset($columns)) $columns = self::getColumns();
 
-            if (count($command) > 1) {
+            if (count($command) > 1) { # handle find_by_ column
                 $by_column = $command[1] == 'by' ? $command[2] : 
                     substr($command[2], strpos($command[2], '_') + 1);
                 
                 $query .= ' where ' . $mysqli->real_escape_string($by_column) . '=?';
             } else {
+                $query .= ' where 1=1 ';
+            }
+            
+            if (isset($args[1]['conditions'])) {
                 # find all the columns in conditions
                 # supports =, !=, <, >, <=, >=
                 preg_match_all('/`?\w+?`?\s*(=|<|>|!=|<=|>=)\s*\?/', $args[1]['conditions'], $matches);
-                
+            
                 # $cols = the columns listed in conditions
                 $cols = $matches[0];
     			array_walk($cols, function(&$el) {
@@ -264,14 +268,14 @@ abstract class DatabaseTable {
     				$el = str_replace('`', '', trim($split[0]));
     			});
 
-    			$query .= ' where ' . $args[1]['conditions'];
-    			
+    			$query .= ' and ' . $args[1]['conditions'];
+			
     			# make sure all columns in conditions exist in the table
     			foreach ($cols as $c) {
                     if (array_search($c, array_merge(array_keys($columns), array('id', 'created', 'updated'))) === false)
                         throw new Exception('Unknown column “' . $c . '”.');
     			}
-            }
+			}
         }
         
         # add order by and limit clauses
@@ -296,6 +300,16 @@ abstract class DatabaseTable {
         if (($stmt = $mysqli->prepare($query)) === false)
             throw new Exception('Problem preparing records: '.$mysqli->error);
         
+        # if find_by_/find_all_by_, push the column and value onto the $cols and $args[1]['values'] arrays
+        if (count($command) > 1) {
+            array_unshift($cols, $by_column); # add the column to the list of columns to be bound
+            if (isset($args[1]['values'])) { # add the first arg to the list of values
+                array_unshift($args[1]['values'], $args[0]);
+            } else { # or create the list of values if a value clause wasn't provided
+                $args[1]['values'] = array($args[0]);
+            }
+        }
+        
         # bind variables
         if (count($cols) > 0) { # bind 'conditions'
             $types = '';
@@ -314,10 +328,6 @@ abstract class DatabaseTable {
             }
             
             call_user_func_array(array($stmt, 'bind_param'), $bind_names);
-        }
-        
-        if (count($command) > 1) { # bind _by_colname
-            $stmt->bind_param($columns[$by_column], $args[0]);
         }
 
         # execute query
