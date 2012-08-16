@@ -1,0 +1,155 @@
+<?php
+
+require_once('Th.class.php');
+require_once('%%CLASSNAME%%.class.php');
+
+if (isset($_REQUEST['a'])) {
+    try {
+        $%%CLASSNAME_PARAMETER%% = new %%CLASSNAME%%($_REQUEST['%%CLASSNAME_PARAMETER%%_id']);
+        switch ($_REQUEST['a']) {
+            case 'delete':
+                $%%CLASSNAME_PARAMETER%%->delete();
+                Th::flash('The %%CLASSNAME_TITLE_LOWER%% ID “' . Th::escape($%%CLASSNAME_PARAMETER%%->id) . '” has been deleted.', 'success');
+                $%%CLASSNAME_PARAMETER%% = null;
+                break;
+        }
+    } catch (Exception $e) {
+        Th::flash($e->getMessage(), 'error');
+    }
+}
+
+if (isset($_REQUEST['add_%%CLASSNAME_PARAMETER%%'])) { # add a new %%CLASSNAME%%
+    $required = array();
+    $missing = array();
+    
+    foreach ($required as $r) {
+        if (trim($_REQUEST[$r]) == '') {
+            $missing[] = Inflector::titleize($r);
+        }
+    }
+    
+    if (count($missing) == 0) {
+        try {
+            $%%CLASSNAME_PARAMETER%% = new %%CLASSNAME%%();
+            
+            %%BEGIN FIELD_LOOP%%
+            $%%CLASSNAME_PARAMETER%%->%%FIELDNAME%% = trim($_REQUEST['%%FIELDNAME_PARAMETER%%']);
+            %%END FIELD_LOOP%%
+            
+            $%%CLASSNAME_PARAMETER%%->save();
+            
+            Th::flash('The %%CLASSNAME_TITLE_LOWER%% ID “' . Th::escape($%%CLASSNAME_PARAMETER%%->id) . '” was saved.', 'success');
+            
+            $%%CLASSNAME_PARAMETER%% = null;
+        } catch (Exception $e) {
+            switch ($e->getCode()) {
+                case 1062: # catch unique constraint violations
+                    Th::flash('Some information in this record already exists in the database: ' . $e->getMessage(), 'error');
+                    break;
+                default:
+                    Th::flash($e->getMessage(), 'error');
+                    break;
+            }
+        }
+    } else {
+        Th::flash('The following ' . (count($missing) == 1 ? 'field is' : 'fields are') . ' required: ' .
+            implode(', ', $missing), 'error');
+    }
+}
+
+if (isset($_REQUEST['save_%%CLASSNAME_PARAMETER%%'])) { # save changes to a %%CLASSNAME%%
+    $required = array();
+    $missing = array();
+    
+    foreach ($required as $r) {
+        if (trim($_REQUEST[$r]) == '') {
+            $missing[] = Inflector::titleize($r);
+        }
+    }
+    
+    if (count($missing) == 0) {
+        try {
+            $%%CLASSNAME_PARAMETER%% = new %%CLASSNAME%%($_REQUEST['%%CLASSNAME_PARAMETER%%_id']);
+            
+            %%BEGIN FIELD_LOOP%%
+            $%%CLASSNAME_PARAMETER%%->%%FIELDNAME%% = trim($_REQUEST['%%FIELDNAME_PARAMETER%%']);
+            %%END FIELD_LOOP%%
+
+            $%%CLASSNAME_PARAMETER%%->save();
+
+            Th::flash('The %%CLASSNAME_TITLE_LOWER%% “' . Th::escape($%%CLASSNAME_PARAMETER%%->id) . '” has been added.', 'success');
+            
+            $%%CLASSNAME_PARAMETER%% = null;
+        } catch (Exception $e) {
+            switch ($e->getCode()) {
+                case 1062: # catch unique constraint violations
+                    Th::flash('Some information in this record already exists in the database: ' . $e->getMessage(), 'error');
+                    break;
+                default:
+                    Th::flash($e->getMessage(), 'error');
+                    break;
+            }
+        }
+    } else {
+        Th::flash('The following ' . (count($missing) == 1 ? 'field is' : 'fields are') . ' required: ' .
+            implode(', ', $missing), 'error');
+    }
+}
+
+$%%CLASSNAME_PARAMETER_PLURAL%% = %%CLASSNAME%%::find('all', array('order' => '`created` asc'));
+
+?>
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+        <title>%%CLASSNAME_TITLE%% Management</title>
+        <link rel="stylesheet" href="main.css" type="text/css" media="screen" charset="utf-8">
+    </head>
+    <body>
+        <?php Th::flash(); ?>
+        
+        <form action="<?php echo htmlentities($_SERVER['PHP_SELF']); ?>" method="post" accept-charset="utf-8">
+            %%BEGIN FIELD_LOOP%%
+            <div class="item">
+                <label for="%%FIELDNAME_PARAMETER%%">%%FIELDNAME_TITLE%%</label>
+                <input type="text" name="%%FIELDNAME_PARAMETER%%" id="%%FIELDNAME_PARAMETER%%" value="<?php echo isset($%%CLASSNAME_PARAMETER%%) ? Th::escape($%%CLASSNAME_PARAMETER%%->%%FIELDNAME_PARAMETER%%) : ''; ?>">
+            </div>
+            %%END FIELD_LOOP%%
+        <?php if (isset($%%CLASSNAME_PARAMETER%%)): ?>
+            <div class="item"><input type="submit" name="save_%%CLASSNAME_PARAMETER%%" value="Save %%CLASSNAME_TITLE%%" id="save_%%CLASSNAME_PARAMETER%%"></div>
+            <input type="hidden" name="save_%%CLASSNAME_PARAMETER%%" value="YES">
+            <input type="hidden" name="%%CLASSNAME_PARAMETER%%_id" value="<?php echo $%%CLASSNAME_PARAMETER%%->id; ?>">
+        <?php else: ?>
+            <div class="item"><input type="submit" name="add_%%CLASSNAME_PARAMETER%%" value="Add %%CLASSNAME_TITLE%%" id="add_%%CLASSNAME_PARAMETER%%"></div>
+            <input type="hidden" name="add_%%CLASSNAME_PARAMETER%%" value="YES">
+        <?php endif ?>
+        </form>
+        
+        <h3>%%CLASSNAME_TITLE%%</h3>
+        <table>
+            <tr>
+                %%BEGIN FIELD_LOOP%%
+                <th class="%%FIELDNAME_PARAMETER%%">%%FIELDNAME_TITLE%%</th>
+                %%END FIELD_LOOP%%
+                <th class="actions"></th>
+            </tr>
+        <?php if (count($%%CLASSNAME_PARAMETER_PLURAL%%) == 0): ?>
+            <tr>
+                <td colspan="%%FIELD_COUNT%%" class="no-records">No records have been created.</td>
+            </tr>
+        <?php endif ?>
+        <?php foreach ($%%CLASSNAME_PARAMETER_PLURAL%% as $r): ?>
+            <tr>
+                %%BEGIN FIELD_LOOP%%
+                <td class="%%FIELDNAME_PARAMETER%%"><?php echo Th::escape($r->%%FIELDNAME_PARAMETER%%); ?></td>
+                %%END FIELD_LOOP%%
+                <td class="actions">
+                    <a href="?a=edit&amp;%%CLASSNAME_PARAMETER%%_id=<?php echo $r->id ?>" class="edit">Edit</a>
+                    <a href="?a=delete&amp;%%CLASSNAME_PARAMETER%%_id=<?php echo $r->id ?>" class="delete">Delete</a>
+                </td>
+            </tr>
+        <?php endforeach ?>
+        </table>
+    </body>
+</html>
