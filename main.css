@@ -86,6 +86,14 @@ table th {
 	vertical-align: top;
 }
 
+table th {
+    background-color: #ddd;
+}
+
+table th.actions {
+    background-color: transparent;
+}
+
 table td p,
 table td li,
 table td a {
