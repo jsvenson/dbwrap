@@ -38,7 +38,7 @@ if (isset($_REQUEST['add_%%CLASSNAME_PARAMETER%%'])) { # add a new %%CLASSNAME%%
             
             $%%CLASSNAME_PARAMETER%%->save();
             
-            Th::flash('The %%CLASSNAME_TITLE_LOWER%% ID “' . Th::escape($%%CLASSNAME_PARAMETER%%->id) . '” was saved.', 'success');
+            Th::flash('The %%CLASSNAME_TITLE_LOWER%% ID “' . Th::escape($%%CLASSNAME_PARAMETER%%->id) . '” has been added.', 'success');
             
             $%%CLASSNAME_PARAMETER%% = null;
         } catch (Exception $e) {
@@ -77,7 +77,7 @@ if (isset($_REQUEST['save_%%CLASSNAME_PARAMETER%%'])) { # save changes to a %%CL
 
             $%%CLASSNAME_PARAMETER%%->save();
 
-            Th::flash('The %%CLASSNAME_TITLE_LOWER%% “' . Th::escape($%%CLASSNAME_PARAMETER%%->id) . '” has been added.', 'success');
+            Th::flash('The %%CLASSNAME_TITLE_LOWER%% ID “' . Th::escape($%%CLASSNAME_PARAMETER%%->id) . '” was saved.', 'success');
             
             $%%CLASSNAME_PARAMETER%% = null;
         } catch (Exception $e) {
