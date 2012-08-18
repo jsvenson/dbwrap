@@ -105,6 +105,16 @@ $%%CLASSNAME_PARAMETER_PLURAL%% = %%CLASSNAME%%::find('all', array('order' => '`
         <meta http-equiv="Content-type" content="text/html; charset=utf-8">
         <title>%%CLASSNAME_TITLE%% Management</title>
         <link rel="stylesheet" href="main.css" type="text/css" media="screen" charset="utf-8">
+        <script type="text/javascript" charset="utf-8">
+        window.onload = function() {
+            var deletes = document.getElementsByClassName('delete');
+            for (var i=0; i < deletes.length; i++) {
+                deletes[i].onclick = function() {
+                    return confirm('Are you sure you want to permanently remove this record?');
+                }
+            }
+        };
+        </script>
     </head>
     <body>
         <?php Th::flash(); ?>
