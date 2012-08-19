@@ -1,6 +1,11 @@
 Generates wrapper classes based on existing MySQL tables.
 
-Usage: <code>generator.php -d&lt;database&gt; -t&lt;table&gt; [--classname=&lt;classname&gt;] [--has-many=&lt;referent-class&gt;] [--scaffold] [--scaffold-only]</code>
+**Usage**
+
+<pre>
+generator.php -d&lt;database&gt; -t&lt;table&gt; [--classname=&lt;classname&gt;]
+        [--has-many=&lt;referent-class&gt;] [--scaffold] [--scaffold-only]
+</pre>
 
 It makes a few assumptions. First, names of tables are pluralized. Animals, monsters, and users, not animal, monster, and user. Second, it expects all tables to have at least the following three rows:
 
