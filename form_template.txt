@@ -9,7 +9,7 @@ if (isset($_REQUEST['a'])) {
         switch ($_REQUEST['a']) {
             case 'delete':
                 $%%CLASSNAME_PARAMETER%%->delete();
-                Th::flash('The %%CLASSNAME_TITLE_LOWER%% ID “' . Th::escape($%%CLASSNAME_PARAMETER%%->id) . '” has been deleted.', 'success');
+                Th::flash('The %%CLASSNAME_TITLE_LOWER%% has been deleted.', 'success');
                 $%%CLASSNAME_PARAMETER%% = null;
                 break;
         }
