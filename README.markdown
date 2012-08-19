@@ -1,6 +1,6 @@
 Generates wrapper classes based on existing MySQL tables.
 
-Usage: <code>generator.php -d&lt;database&gt; -t&lt;table&gt; [--classname=&lt;classname&gt;] [--has-many=&lt;referent-class&gt;]</code>
+Usage: <code>generator.php -d&lt;database&gt; -t&lt;table&gt; [--classname=&lt;classname&gt;] [--has-many=&lt;referent-class&gt;] [--scaffold] [--scaffold-only]</code>
 
 It makes a few assumptions. First, names of tables are pluralized. Animals, monsters, and users, not animal, monster, and user. Second, it expects all tables to have at least the following three rows:
 
@@ -134,3 +134,9 @@ $cage = new Cage(1); # get cage with id = 1
 # get the number of weasels in the cage
 echo $cage->animals()->count(array('family'=>'mustilidae'));
 </pre>
+
+**Scaffold Generation**
+
+A basic CRUD page can be created by supplying the <code>--scaffold</code> switch when calling generator.php. The page will contain a form for adding records as well as a table listing all existing records with the ability to edit or delete a specific record. Basic paging is included limiting the number of records on a single page to 25.
+
+You can alternately generate the scaffold page with <code>--scaffold-only</code> to avoid overwriting an existing class file.
