@@ -149,3 +149,7 @@ label {
 label.inline {
     display: inline;
 }
+
+.paging {
+    margin: 10px 0;
+}
