@@ -99,22 +99,22 @@ try {
 			$classname_parameter_plural,
 			$classname_title,
 			strtolower($classname_title),
-			count($column_list)
+			count($column_list) # use this rather than $columns because we show id, created, and updated in the table
 		);
 		
 		$template = str_replace($replace, $with, $template);
 
 		# loop through each %%BEGIN FIELD_LOOP%%
         $pattern = '/\s+%%BEGIN FIELD_LOOP%%([\w\W]+?)\n\s*%%END FIELD_LOOP%%/';
-        $template = preg_replace_callback($pattern, function($matches) use ($column_list) {
+        $template = preg_replace_callback($pattern, function($matches) use ($columns) {
             $str = '';
-            for ($i=0; $i < count($column_list); $i++) { 
-                $fieldname_title = Inflector::titleize($column_list[$i]);
+            for ($i=0; $i < count($columns); $i++) { 
+                $fieldname_title = Inflector::titleize($columns[$i]['name']);
                 $fieldname_parameter = Inflector::parameterize($fieldname_title, '_');
                 $str .= str_replace(array(
                     '%%FIELDNAME%%', '%%FIELDNAME_PARAMETER%%', '%%FIELDNAME_TITLE%%'
                 ), array(
-                    $column_list[$i], $fieldname_parameter, $fieldname_title
+                    $columns[$i]['name'], $fieldname_parameter, $fieldname_title
                 ), $matches[1]);
             }
         	return $str;

@@ -161,6 +161,9 @@ $%%CLASSNAME_PARAMETER_PLURAL%% = %%CLASSNAME%%::find('all', array(
         
         <table>
             <tr>
+                <th class="id">ID</th>
+                <th class="created">Created</th>
+                <th class="updated">Updated</th>
                 %%BEGIN FIELD_LOOP%%
                 <th class="%%FIELDNAME_PARAMETER%%">%%FIELDNAME_TITLE%%</th>
                 %%END FIELD_LOOP%%
@@ -173,6 +176,9 @@ $%%CLASSNAME_PARAMETER_PLURAL%% = %%CLASSNAME%%::find('all', array(
         <?php endif ?>
         <?php foreach ($%%CLASSNAME_PARAMETER_PLURAL%% as $r): ?>
             <tr>
+                <td class="id"><?php echo Th::escape($r->id); ?></td>
+                <td class="created"><?php echo Th::date($r->created); ?></td>
+                <td class="updated"><?php echo Th::date($r->updated); ?></td>
                 %%BEGIN FIELD_LOOP%%
                 <td class="%%FIELDNAME_PARAMETER%%"><?php echo Th::escape($r->%%FIELDNAME_PARAMETER%%); ?></td>
                 %%END FIELD_LOOP%%
