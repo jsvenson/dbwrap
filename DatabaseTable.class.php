@@ -259,7 +259,7 @@ abstract class DatabaseTable {
             if (isset($args[1]['conditions'])) {
                 # find all the columns in conditions
                 # supports =, !=, <, >, <=, >=
-                preg_match_all('/`?\w+?`?\s*(=|<|>|!=|<=|>=)\s*\?/', $args[1]['conditions'], $matches);
+                preg_match_all('/`?\w+?`?\s*(=|<|>|!=|<=|>=)\s*\?/', $args[1]['conditions'][0], $matches);
             
                 # $cols = the columns listed in conditions
                 $cols = $matches[0];
@@ -268,13 +268,17 @@ abstract class DatabaseTable {
     				$el = str_replace('`', '', trim($split[0]));
     			});
 
-    			$query .= ' and ' . $args[1]['conditions'];
+    			$query .= ' and ' . $args[1]['conditions'][0];
 			
     			# make sure all columns in conditions exist in the table
     			foreach ($cols as $c) {
                     if (array_search($c, array_merge(array_keys($columns), array('id', 'created', 'updated'))) === false)
                         throw new Exception('Unknown column “' . $c . '”.');
     			}
+                
+                # create values array from the conditions and remove the initial condition string
+                $values = $args[1]['conditions'];
+                array_shift($values);
 			}
         }
         
@@ -303,10 +307,10 @@ abstract class DatabaseTable {
         # if find_by_/find_all_by_, push the column and value onto the $cols and $args[1]['values'] arrays
         if (count($command) > 1) {
             array_unshift($cols, $by_column); # add the column to the list of columns to be bound
-            if (isset($args[1]['values'])) { # add the first arg to the list of values
-                array_unshift($args[1]['values'], $args[0]);
+            if (isset($values)) { # add the first arg to the list of values
+                array_unshift($values, $args[0]);
             } else { # or create the list of values if a value clause wasn't provided
-                $args[1]['values'] = array($args[0]);
+                $values = array($args[0]);
             }
         }
         
@@ -317,7 +321,7 @@ abstract class DatabaseTable {
             
             for ($i=0; $i < count($cols); $i++) { 
                 $types .= $columns[$cols[$i]];
-                $params[] = $args[1]['values'][$i];
+                $params[] = $values[$i];
             }
             
             $bind_names[] = $types;

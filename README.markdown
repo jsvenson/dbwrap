@@ -101,13 +101,16 @@ $mammals = Animal::find_all_by_phylum('chordata', array('order' => 'family desc'
 # get all the records from animals
 $animals = Animal::find();
 
-# use find() to get all carnivorans ordered by genus, reverse alphabetical
+# use find() to get all carnivorans in cage 12 ordered by genus, reverse alphabetical
 $mammals = Animal::find(
     'all',
     array(
-      'conditions' => '`order`=?', # wrap keywords as in raw SQL
-      'values'     => array('carnivora'),
-      'order'      => 'genus desc'
+        'conditions' => array(
+            '`order` = ? and cage_id = ?', # wrap keywords as in raw SQL
+            'carnivora', # follow the conditions clause with an ordered list
+            12           # of values to replace the ? with
+        ),
+        'order' => 'genus desc'
     )
 );
 
