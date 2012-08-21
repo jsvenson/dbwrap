@@ -13,7 +13,7 @@ It makes a few assumptions. First, names of tables are pluralized. Animals, mons
 * created, datetime
 * updated, datetime
 
-Third, the use of __callStatic() necessitates PHP >= 5.3.
+Third, the use of __callStatic() and other features necessitates PHP >= 5.3.
 
 Inflector.class.php is a subset of the Ruby [Inflector](http://as.rubyonrails.org/classes/Inflector.html) class.
 
@@ -106,7 +106,7 @@ $mammals = Animal::find(
     'all',
     array(
         'conditions' => array(
-            '`order` = ? and cage_id = ?', # wrap keywords as in raw SQL
+            '`order` = ? and `cage_id` = ?', # wrap keywords as in raw SQL
             'carnivora', # follow the conditions clause with an ordered list
             12           # of values to replace the ? with
         ),
