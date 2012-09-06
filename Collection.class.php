@@ -18,9 +18,8 @@ class Collection {
 		foreach (array_keys($args) as $k) {
             $conditions[] = '`'.$k.'` = ?';
 		}
-		$this->objects = $classname::find(':all', array(
-            'conditions' => implode(' and ', $conditions),
-            'values' => array_values($args)
+		$this->objects = $classname::find('all', array(
+            'conditions' => array(implode(' and ', $conditions), array_values($args))
 		));
 	}
 	
