@@ -7,13 +7,17 @@ generator.php -d&lt;database&gt; -t&lt;table&gt; [--classname=&lt;classname&gt;]
         [--has-many=&lt;referent-class&gt;] [--scaffold] [--scaffold-only]
 </pre>
 
-It makes a few assumptions. First, names of tables are pluralized. Animals, monsters, and users, not animal, monster, and user. Second, it expects all tables to have at least the following three rows:
+It makes a number of assumptions. First, names of tables are pluralized. Animals, monsters, and users, not animal, monster, and user.
+
+Second, it expects all tables to have at least the following three rows:
 
 * id, int auto_increment primary key
 * created, datetime
 * updated, datetime
 
 Third, the use of __callStatic() and other features necessitates PHP >= 5.3.
+
+Fourth, database column names must also be [valid PHP variable](http://www.php.net/manual/en/language.variables.basics.php) names: <code>`family_2`</code> is valid, <code>`family(2)`</code> is not.
 
 Inflector.class.php is a subset of the Ruby [Inflector](http://as.rubyonrails.org/classes/Inflector.html) class.
 
