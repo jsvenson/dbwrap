@@ -184,9 +184,12 @@ abstract class DatabaseTable {
         $col_types = array();
         
         $data_types = array(
-			'bigint' => 'i', 'binary' => 'i', 'bit' => 'i', 'blob' => 'b', 'char' => 's', 'date' => 's', 'datetime' => 's',
-			'decimal' => 'd', 'enum' => 's', 'int' => 'i', 'longblob' => 'b', 'mediumblob' => 'b', 'mediumtext' => 's',
-			'set' => 's', 'smallint' => 'i', 'text' => 's', 'time' => 's', 'timestamp' => 's', 'tinyint' => 'i', 'varchar' => 's'
+            # bigint is cast as a string to get around the PHP_INT_MAX limitation on 32 bit systems
+            'bigint' => 's', 'binary' => 's', 'bit' => 'i', 'blob' => 's', 'char' => 's', 'date' => 's',
+            'datetime' => 's', 'decimal' => 'd', 'double' => 'd', 'enum' => 's', 'float' => 'd', 'int' => 'i',
+            'longblob' => 's', 'longtext' => 's', 'mediumblob' => 's', 'mediumint' => 'i', 'mediumtext' => 's',
+            'set' => 's', 'smallint' => 'i', 'text' => 's', 'time' => 's', 'timestamp' => 's', 'tinyblob' => 's',
+            'tinyint' => 'i', 'tinytext' => 's', 'varbinary' => 's', 'varchar' => 's', 'year' => 's'
 		);
 		
 		$mysqli = new MySQLi(
