@@ -220,7 +220,7 @@ abstract class DatabaseTable {
 	
     # currently handles [find|count][_by_|_all_by_<column_name>]
     # find('first|all', array(
-    #   ['conditions'=>'<conditions>', 'values'=>array(<values),]
+    #   ['conditions'=>array('<conditions>', <values),]
     #   ['order'=>'<order>',]
     #   ['page'=><1-based page number>, 'per_page'=><records per page>,]
     # ));
@@ -307,7 +307,7 @@ abstract class DatabaseTable {
         if (($stmt = $mysqli->prepare($query)) === false)
             throw new Exception('Problem preparing records: '.$mysqli->error);
         
-        # if find_by_/find_all_by_, push the column and value onto the $cols and $args[1]['values'] arrays
+        # if find_by_/find_all_by_, push the column and value onto the $cols and $values arrays
         if (count($command) > 1) {
             array_unshift($cols, $by_column); # add the column to the list of columns to be bound
             if (isset($values)) { # add the first arg to the list of values
