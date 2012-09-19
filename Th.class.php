@@ -9,7 +9,7 @@ mb_internal_encoding('UTF-8'); # set internal encoding to utf8 so mb_strlen('…
 /**
 * TextHelper
 */
-class th {
+class Th {
     const ELLIPSIS_START = 0;
     const ELLIPSIS_MIDDLE = 1;
     const ELLIPSIS_END = 2;
