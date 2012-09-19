@@ -2,7 +2,9 @@
 
 require_once('Inflector.class.php');
 
-mb_internal_encoding('UTF-8'); # set internal encoding to utf8 so mb_strlen('…') return 1 instead of 3
+mb_internal_encoding('UTF-8'); # set internal encoding to utf8 so mb_strlen('…') returns 1 instead of 3
+
+@session_start(); # (re)start session if it hasn't yet been
 
 /**
 * TextHelper
