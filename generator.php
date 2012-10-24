@@ -131,7 +131,7 @@ try {
 		
 			$properties[]   = 'var $'.$c['name'].' = '.$val.';';
 			$type_defs[]    = "\$this->_types['{$c['name']}'] = '{$data_types[$c['type']]}';";
-	        // $type_defs[]    = "\$this->_lazyload['{$c['name']}'] = ".(delayed_load($c['type']) ? 'true' : 'false').";";
+            $type_defs[]    = "\$this->_lazyload['{$c['name']}'] = ".(delayed_load($c['type']) ? 'true' : 'false').";";
 			$bind_columns[] = '$j->'.$c['name'].' = $'.$c['name'].';';
 		}
 	

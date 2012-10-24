@@ -180,7 +180,7 @@ abstract class DatabaseTable {
 		return $flat ? '`'.implode('`,`', $this->columns()).'`' : $columns;
 	}
 	
-	private static function getColumns() {
+	private static function getColumns($lazy_filter = false) {
         $col_types = array();
         
         $data_types = array(
@@ -204,6 +204,7 @@ abstract class DatabaseTable {
 		$database  = dbConstants::_dbname;
 		
 		$query = 'select column_name, data_type from information_schema.columns where table_schema=? and table_name=?';
+        if ($lazy_filter) $query .= " and data_type not in ('blob', 'text', 'longblob', 'longtext', 'mediumblob', 'mediumtext', 'tinyblob', 'tinytext')";
 		$stmt = $mysqli->prepare($query);
 		$stmt->bind_param('ss', $database, $tablename);
 		
@@ -235,7 +236,7 @@ abstract class DatabaseTable {
         if ($command[0] == 'count') { 
             $query = 'select count(*) as \'total\' from `'.$class::_tablename.'`';
         } else {
-            $columns = self::getColumns();
+            $columns = self::getColumns(true);
             $query = 'select `'.implode('`,`', array_keys($columns)).'` from `'.$class::_tablename.'`';
         }
 
@@ -384,6 +385,35 @@ abstract class DatabaseTable {
         
         # return the result
         return $records;
+    }
+    
+    public function __get($varname) {
+        if ($this->_lazyload[$varname]) {
+            # load delayed data
+            $mysqli = new MySQLi(
+                dbConstants::_dbserver,
+                dbConstants::_dbuser,
+                base64_decode(dbConstants::_dbpass),
+                dbConstants::_dbname
+            );
+            
+            $query = 'select ' . $mysqli->real_escape_string($varname) . ' from ' . $class::_tablename;
+            
+            $stmt = $mysqli->prepare($query);
+            $stmt->execute();
+            
+            $stmt->bind_result($data);
+            while ($stmt->fetch()) {
+                $this->$varname = $data;
+            }
+            
+            $stmt->close();
+            $mysqli->close();
+        }
+        
+        # TODO: what happens when the variable is accessed again? There needs to be some way of saying 'I've already pulled the data, don't go back to the database.' It has to be something more than checking for "".
+        
+        return $this->$varname;
     }
 }
 
