@@ -11,18 +11,18 @@ abstract class DatabaseTable {
 	var $_db         = null;
 	var $_tablename  = '';
 	
-	var $id          = 0;
-	var $created     = '';
-	var $updated     = '';
-	
-	var $_types      = array(); # column types
-	var $_lazyload   = array(); # boolean array for column delayed loading
+	protected $id          = 0;
+	protected $created     = '';
+	protected $updated     = '';
+    
+	protected $_types      = array(); # column types
+    protected $_lazyload = array( # boolean array for column delayed loading
+        'id' => false,
+        'created' => false,
+        'updated' => false
+    );
 	
 	function __construct($id = 0) {
-		$this->_types['id'] = 'i';
-		$this->_types['created'] = 's';
-		$this->_types['updated'] = 's';
-		
 		if (is_array($id)) {
 			$cols = array_filter(array_keys(get_class_vars(get_called_class())), function($el) {
 				return $el[0] != '_';
@@ -35,10 +35,6 @@ abstract class DatabaseTable {
 			if ($id > 0) $this->load($id);
 		}
 	}
-	
-    // public function __get($varname) {
-    //  # TODO: if $this->_lazyload($varname) then pull data from database
-    // }
 	
 	protected function openConnection() {
 		$c = get_called_class();
@@ -83,10 +79,15 @@ abstract class DatabaseTable {
 		if ($id == 0) return false;
 		
 		$this->openConnection();
-		
-		$columns = '`'.implode('`,`', $this->columns()).'`';
-		
-		# TODO: filter $columns for $this->lazyload[]
+        
+        # filter out lazy loading columns
+		$lazyload = $this->_lazyload;
+        $cols = array_values(array_filter($this->columns(), function($el) use($lazyload) {
+            return !$lazyload[$el];
+        }));
+        
+        $columns = '`' . implode('`,`', $cols) . '`';
+        
 		if (!($stmt = $this->_db->prepare('select '.$columns.' from `'.$this->_tablename.'` where id = ?')))
 			throw new Exception('Problem preparing select statement: '.$this->_db->error);
 		$stmt->bind_param('i', $id);
@@ -94,9 +95,8 @@ abstract class DatabaseTable {
 		if (!$stmt->execute()) throw new Exception('Problem loading record: '.$stmt->error);
 		
 		$params = array();
-		$c = $this->columns();
-		for ($i=0; $i < count($c); $i++) { 
-			$params[] = &$this->$c[$i];
+		for ($i=0; $i < count($cols); $i++) { 
+			$params[] = &$this->$cols[$i];
 		}
 		
 		if ((call_user_func_array(array($stmt, 'bind_result'), $params)) === false)
@@ -138,13 +138,13 @@ abstract class DatabaseTable {
 			$values = '';
 			$types  = '';
 			$params = array();
-			
-			# TODO: if $this->_lazyload[column] and column == null, don't update that column
-			
+            
 			for ($i=0; $i < count($columns); $i++) { 
-				$types  .= $this->_types[$columns[$i]];
-				$values .= ', `'.$columns[$i].'`=?';
-				$params[] = &$this->$columns[$i];
+                if (!$this->_lazyload[$columns[$i]]) {
+    				$types  .= $this->_types[$columns[$i]];
+    				$values .= ', `'.$columns[$i].'`=?';
+    				$params[] = &$this->$columns[$i];
+                }
 			}
 			
 			$types   .= 'i';        # add final type for id
@@ -387,8 +387,10 @@ abstract class DatabaseTable {
         return $records;
     }
     
-    public function __get($varname) {
-        if ($this->_lazyload[$varname]) {
+    public function __get($name) {
+        # if we're not a new record and $name is a lazily loaded column
+        # pull the value of $name from the database
+        if ($this->id > 0 && isset($this->_lazyload[$name]) && $this->_lazyload[$name]) {
             # load delayed data
             $mysqli = new MySQLi(
                 dbConstants::_dbserver,
@@ -397,23 +399,29 @@ abstract class DatabaseTable {
                 dbConstants::_dbname
             );
             
-            $query = 'select ' . $mysqli->real_escape_string($varname) . ' from ' . $class::_tablename;
+            $class = get_called_class();
+            $query = 'select ' . $mysqli->real_escape_string($name) . ' from ' . $class::_tablename;
             
             $stmt = $mysqli->prepare($query);
             $stmt->execute();
             
             $stmt->bind_result($data);
             while ($stmt->fetch()) {
-                $this->$varname = $data;
+                $this->$name = $data;
             }
             
             $stmt->close();
             $mysqli->close();
+            
+            $this->_lazyload[$name] = false; # don't hit the database on subsequent calls
         }
         
-        # TODO: what happens when the variable is accessed again? There needs to be some way of saying 'I've already pulled the data, don't go back to the database.' It has to be something more than checking for "".
-        
-        return $this->$varname;
+        return $this->$name;
+    }
+    
+    public function __set($name, $value) {
+        $this->_lazyload[$name] = false;
+        $this->$name = $value;
     }
 }
 
