@@ -23,7 +23,7 @@ class Th {
         if (is_null($message)) {
             if (isset($_SESSION['flash']) && $_SESSION['flash'] != array()) {
                 foreach ($_SESSION['flash'] as $msg) {
-                    echo '<div class="message '.$msg['type'].'">'.$msg['msg'].'</div>';
+                    echo '<div class="message ' . $msg['type'].'">' . $msg['msg'] . '</div>';
                 }
 
                 $_SESSION['flash'] = array();
@@ -150,18 +150,18 @@ class Th {
         $number = preg_replace('/[\s]/', '', $number); # remove non-numeric characters
         
         if ($area_code) {
-            $number = preg_replace('/(\d{1,3})(\d{3})(\d{4}$)/', '($1) $2'.$delimiter.'$3', $number);
+            $number = preg_replace('/(\d{1,3})(\d{3})(\d{4}$)/', '($1) $2' . $delimiter . '$3', $number);
         } else {
-            $number = preg_replace('/(\d{0,3})(\d{3})(\d{4})$/', '$1'.$delimiter.'$2'.$delimiter.'$3', $number);
+            $number = preg_replace('/(\d{0,3})(\d{3})(\d{4})$/', '$1' . $delimiter . '$2' . $delimiter . '$3', $number);
             if ($delimiter != '' && $number[0] == $delimiter) {
                 $number = substr($number, 1);
             }
         }
         
         $str = '';
-        if (!is_null($country_code)) $str .= '+'.$country_code.$delimiter;
+        if (!is_null($country_code)) $str .= '+' . $country_code . $delimiter;
         $str .= $number;
-        if (!is_null($extension)) $str .= ' x '.$extension;
+        if (!is_null($extension)) $str .= ' x ' . $extension;
         
         return self::escape($str);
     }
@@ -179,7 +179,7 @@ class Th {
         $base = $prefix ? 1000 : 1024;
         
         if ((int)$number < $base) {
-            return self::escape($number.' '.$unit);
+            return self::escape($number . ' ' . $unit);
         } else {
             $max_exp = count($storage_units) - 1;
             $exponent = (int)(log($number) / log($base));
@@ -190,7 +190,7 @@ class Th {
             
             $formatted_number = number_format($number, $precision, $separator, $delimiter);
             
-            return self::escape($formatted_number.' '.$unit_key);
+            return self::escape($formatted_number . ' ' . $unit_key);
         }
     }
 }

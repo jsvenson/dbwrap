@@ -1,63 +1,63 @@
 body,
 body * {
-	font-family: "HelveticaNeue-Light", "Helvetica", "Arial", sans-serif;
-	font-size: 12pt;
+    font-family: "HelveticaNeue-Light", "Helvetica", "Arial", sans-serif;
+    font-size: 12pt;
 }
 
 body pre,
 body code {
-	font-family: "Inconsolata", "Monaco", "Courier", monospace;	
+    font-family: "Inconsolata", "Monaco", "Courier", monospace;    
 }
 
 #menu {
-	list-style: none;
-	margin: 0;
-	margin-bottom: 20px;
-	border-bottom: 1px solid #666;
-	padding: 0;
-	padding-bottom: 5px;
-	text-align: right;
+    list-style: none;
+    margin: 0;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #666;
+    padding: 0;
+    padding-bottom: 5px;
+    text-align: right;
 }
 
 #menu li {
-	display: inline-block;
-	margin: 0 0.25em;
-	padding: 0;
+    display: inline-block;
+    margin: 0 0.25em;
+    padding: 0;
 }
 
 #menu li.title {
-	float: left;
-	font-weight: bold;
+    float: left;
+    font-weight: bold;
 }
 
 a,
 a:visited {
-	text-decoration: none;
-	color: #1c72ff;
+    text-decoration: none;
+    color: #1c72ff;
 }
 
 a:hover {
-	text-shadow: rgba(0, 0, 0, 0.3) 0 1px 0;
+    text-shadow: rgba(0, 0, 0, 0.3) 0 1px 0;
 }
 
 .message {
-	text-align: center;
-	border: 3px solid #000;
-	margin: 15px 0;
-	padding: 10px;
-	position: relative;
+    text-align: center;
+    border: 3px solid #000;
+    margin: 15px 0;
+    padding: 10px;
+    position: relative;
 }
 
 .message.error {
-	border-color: #f00;
-	color: #f00;
-	background-color: #ffbfbe;
+    border-color: #f00;
+    color: #f00;
+    background-color: #ffbfbe;
 }
 
 .message.success {
-	border-color: #078c10;
-	color: #078c10;
-	background-color: #B2D8B4;
+    border-color: #078c10;
+    color: #078c10;
+    background-color: #B2D8B4;
 }
 
 .message .close {
@@ -70,20 +70,20 @@ a:hover {
 }
 
 h3 {
-	margin: 10px 0;
+    margin: 10px 0;
 }
 
 table {
-	border-collapse: collapse;
+    border-collapse: collapse;
 }
 
 table td,
 table th {
-	border: 1px solid #ccc;
-	padding: 4px;
-	text-align: left;
-	font-size: 10pt;
-	vertical-align: top;
+    border: 1px solid #ccc;
+    padding: 4px;
+    text-align: left;
+    font-size: 10pt;
+    vertical-align: top;
 }
 
 table th {
@@ -97,40 +97,40 @@ table th.actions {
 table td p,
 table td li,
 table td a {
-	font-size: 10pt;
+    font-size: 10pt;
 }
 
 td p:first-child {
-	margin-top: 0;
+    margin-top: 0;
 }
 
 td p:last-child {
-	margin-bottom: 0;
+    margin-bottom: 0;
 }
 
 td.id,
 td.price {
-	text-align: right;
+    text-align: right;
 }
 
 tr:hover td {
-	background-color: #eee;
+    background-color: #eee;
 }
 
 table th.actions {
-	border: none;
+    border: none;
 }
 
 td.no-records {
-	text-align: center;
-	font-style: italic;
-	background-color: #eee;
+    text-align: center;
+    font-style: italic;
+    background-color: #eee;
 }
 
 td.available,
 td.active {
-	text-align: center;
-	vertical-align: middle;
+    text-align: center;
+    vertical-align: middle;
 }
 
 td.question-count {
@@ -139,7 +139,7 @@ td.question-count {
 
 input[type=text].required,
 textarea.required {
-	background-color: #ff9594;
+    background-color: #ff9594;
 }
 
 label {
