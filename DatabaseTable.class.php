@@ -199,6 +199,8 @@ abstract class DatabaseTable {
             dbConstants::_dbname
         );
         
+        $mysqli->set_charset('utf8'); # make sure everything is sent as utf8
+        
         $classname = get_called_class();
         $tablename = $classname::_tablename;
         $database  = dbConstants::_dbname;
