@@ -402,9 +402,11 @@ abstract class DatabaseTable {
             );
             
             $class = get_called_class();
-            $query = 'select ' . $mysqli->real_escape_string($name) . ' from ' . $class::_tablename;
+            $query = 'select ' . $mysqli->real_escape_string($name) . ' from ' . $class::_tablename
+                . ' where `id` = ?';
             
             $stmt = $mysqli->prepare($query);
+            $stmt->bind_param('i', $this->id);
             $stmt->execute();
             
             $stmt->bind_result($data);
