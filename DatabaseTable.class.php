@@ -221,6 +221,15 @@ abstract class DatabaseTable {
         return $col_types;
     }
     
+    # Returns a hash of the record data
+    public function toArray() {
+        $result = array();
+        foreach ($this->columns() as $c) {
+            $result[$c] = $this->__get($c); # indirect access for lazy loading
+        }
+        return $result;
+    }
+    
     # currently handles [find|count][_by_|_all_by_<column_name>]
     # find('first|all', array(
     #   ['conditions'=>array('<conditions>', <values),]
