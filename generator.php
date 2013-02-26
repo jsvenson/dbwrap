@@ -5,7 +5,7 @@ require_once('Inflector.class.php');
 require_once('dbConstants.class.php');
 
 if (!isset($argv[1]) || $argv[1] == '?' || $argv[1] == 'help') {
-    echo "\n" . 'Usage: generator -d<database> -t<table> [--classname=<classname>]' . 
+    echo "\n" . 'Usage: generator [-d<database>] -t<table> [--classname=<classname>]' . 
          "\n" . '         [--has-many=<referent-class>] [--scaffold] [--scaffold-only]' . "\n\n";
     exit();
 }
@@ -27,9 +27,9 @@ $data_types = array(
 
 
 
-$options = getopt('d:t:', array('classname::', 'has-many::', 'scaffold', 'scaffold-only'));
+$options = getopt('d::t:', array('classname::', 'has-many::', 'scaffold', 'scaffold-only'));
 
-$dbname    = $options['d'];
+$dbname    = isset($options['d'])? $options['d'] : dbConstants::_dbname;
 $table     = strtolower($options['t']);
 $classname = Inflector::classify(isset($options['classname']) ? $options['classname'] : $table);
 

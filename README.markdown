@@ -3,11 +3,13 @@ Generates wrapper classes based on existing MySQL tables.
 **Usage**
 
 <pre>
-generator.php -d&lt;database&gt; -t&lt;table&gt; [--classname=&lt;classname&gt;]
+generator.php [-d&lt;database&gt;] -t&lt;table&gt; [--classname=&lt;classname&gt;]
         [--has-many=&lt;referent-class&gt;] [--scaffold] [--scaffold-only]
 </pre>
 
-It makes a number of assumptions. First, names of tables are pluralized. Animals, monsters, and users, not animal, monster, and user.
+If a database is not specified, the value set in dbConstants.class.php will be used.
+
+The generator makes a number of assumptions. First, names of tables are pluralized. Animals, monsters, and users, not animal, monster, and user.
 
 Second, it expects all tables to have at least the following three rows:
 
