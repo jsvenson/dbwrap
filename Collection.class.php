@@ -9,7 +9,7 @@ function __autoload($name) {
 /**
 * Collection
 */
-class Collection {
+class Collection implements Iterator {
     var $objects = array();
     
     function __construct($class, $args = array()) {
@@ -79,6 +79,28 @@ class Collection {
         });
         
         return count($leftovers) > 0;
+    }
+    
+    # Iterator functions
+    public function rewind() {
+        reset($this->objects);
+    }
+    
+    public function current() {
+        return current($this->objects);
+    }
+    
+    public function key() {
+        return key($this->objects);
+    }
+    
+    public function next() {
+        return next($this->objects);
+    }
+    
+    public function valid() {
+        $key = key($this->objects);
+        return $key !== null && $key !== false;
     }
 }
 
