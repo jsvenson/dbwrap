@@ -19,7 +19,7 @@ class Collection {
             $conditions[] = '`' . $k . '` = ?';
         }
         $this->objects = $classname::find('all', array(
-            'conditions' => array(implode(' and ', $conditions), array_values($args))
+            'conditions' => array_merge(array(implode(' and ', $conditions)), array_values($args))
         ));
     }
     
