@@ -11,9 +11,10 @@ function __autoload($name) {
 */
 class Collection implements Iterator {
     var $objects = array();
+    private $classname = '';
     
     function __construct($class, $args = array()) {
-        $classname = Inflector::classify($class);
+        $this->classname = $classname = Inflector::classify($class);
         $conditions = array();
         foreach (array_keys($args) as $k) {
             $conditions[] = '`' . $k . '` = ?';
@@ -36,14 +37,8 @@ class Collection implements Iterator {
         return count($filtered);
     }
     
-    public function add($conditions, $classname) {
-        $keys = array_keys($conditions);
-        $vals = array_values($conditions);
-        
-        $o = new $classname();
-        for ($i=0; $i < count($keys); $i++) { 
-            $o->$keys[$i] = $vals[$i];
-        }
+    public function add($conditions) {
+        $o = new $this->classname($conditions);
         $o->save();
         
         $this->objects[] = $o;
