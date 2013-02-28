@@ -76,6 +76,27 @@ class Collection implements Iterator {
         return count($leftovers) > 0;
     }
     
+    # return object at index $idx
+    public function index($idx) {
+        return $idx >= $this->count() || $this->count() == 0? false : $this->objects[$idx];
+    }
+    
+    # alias to index()
+    public function eq($idx) {
+        return $this->index($idx);
+    }
+    
+    # return first object
+    public function first() {
+        return $this->count() == 0? false : $this->index(0);
+    }
+    
+    # return last object
+    public function last() {
+        return $this->count() == 0? false : $this->index($this->count());
+    }
+    
+    
     # Iterator functions
     public function rewind() {
         reset($this->objects);
