@@ -266,7 +266,7 @@ abstract class DatabaseTable {
                 $by_column = $command[1] == 'by' ? $command[2] : 
                     substr($command[2], strpos($command[2], '_') + 1);
                 
-                $query .= ' where ' . $mysqli->real_escape_string($by_column) . '=?';
+                $query .= ' where `' . $mysqli->real_escape_string($by_column) . '`=?';
             } else {
                 $query .= ' where 1=1 ';
             }
