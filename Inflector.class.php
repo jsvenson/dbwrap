@@ -31,7 +31,7 @@ class Inflector {
     );
     
     private static $singular = array(
-        array('/(database)s$/i',                                                  '$1'     ),
+        array('/(database|stove)s$/i',                                            '$1'     ),
         array('/(quiz)zes$/i',                                                    '$1'     ),
         array('/(matr)ices$/i',                                                   '$1ix'   ),
         array('/(vert|ind)ices$/i',                                               '$1ex'   ),
