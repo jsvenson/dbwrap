@@ -149,7 +149,7 @@ class Inflector {
         $parameterized_string = preg_replace('/[^a-z0-9\-_]+/i', $separator, self::transliterate($string));
         if ($separator != null && $separator != '') {
             $re_separator = preg_quote($separator);
-            # no more than one of $seaparator in a row
+            # no more than one of $separator in a row
             $parameterized_string = preg_replace("/$re_separator{2,}/", $separator, $parameterized_string);
             # remove leading/trailing $separator
             $parameterized_string = preg_replace("/^$re_separator|$re_separator$/i", '', $parameterized_string);
