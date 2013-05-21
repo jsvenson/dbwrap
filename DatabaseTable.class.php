@@ -10,6 +10,7 @@ require_once('Collection.class.php');
 abstract class DatabaseTable {
     var $_db         = null;
     var $_tablename  = '';
+		var $_dirty      = true;
     
     protected $id          = 0;
     protected $created     = '';
@@ -107,11 +108,15 @@ abstract class DatabaseTable {
         $stmt->close();
         
         $this->closeConnection();
+				
+				$this->_dirty = false;
         
         return true;
     }
     
     public function save() {
+				if (!$this->_dirty) return true; # don't make unnecessary db calls
+				
         $this->openConnection();
         
         $ignore  = array_keys(get_class_vars('DatabaseTable'));
@@ -166,6 +171,8 @@ abstract class DatabaseTable {
         $this->load(($this->_db->insert_id > 0 ? $this->_db->insert_id : $this->id));
         
         $this->closeConnection();
+				
+				$this->_dirty = false;
         
         return true;
     }
@@ -229,6 +236,12 @@ abstract class DatabaseTable {
         }
         return $result;
     }
+		
+		# Set table.updated to current timestamp
+		public function touch() {
+			$this->updated = date('Y-m-d H:i:s');
+			$this->_dirty = true;
+		}
     
     # currently handles [find|count][_by_|_all_by_<column_name>]
     # find('first|all', array(
@@ -435,6 +448,7 @@ abstract class DatabaseTable {
     public function __set($name, $value) {
         $this->_lazyload[$name] = false;
         $this->$name = $value;
+				$this->_dirty = true;
     }
 }
 
